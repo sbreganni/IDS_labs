@@ -12,6 +12,9 @@ output:
     toc_depth: 3
     toc_float: true
     self_contained: false
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{=html}
@@ -37,59 +40,85 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 ## Welcome to Week 3! `r emo::ji("wave")`
 
-
-This week's tutorial will be divided in three parts. 
+This week's tutorial will be divided in three parts.
 
 1.  More Iteration practice
-2.  Automation with R scripts and Scheduling with `cronR` and `taskscheduleR`
+2.  Automation with R scripts and Scheduling with `cronR` and
+    `taskscheduleR`
 3.  Debugging with `traceback()`, `browser()`, `try()` and `tryCatch()`
 
----
+------------------------------------------------------------------------
 
 # Before we start: GitHub Fork `r emo::ji("fork_and_knife")`
 
-Now that we have seen some of the basics of Git and GitHub, lets expand on this knowledge to learn how to fork this repository to your own GitHub account. A fork is a copy of a repository that allows you to freely experiment with changes without affecting the original project. In the case of these labs, this allows you to add your own notes and work on the exercises without overwriting the original repository.
+Now that we have seen some of the basics of Git and GitHub, lets expand
+on this knowledge to learn how to fork this repository to your own
+GitHub account. A fork is a copy of a repository that allows you to
+freely experiment with changes without affecting the original project.
+In the case of these labs, this allows you to add your own notes and
+work on the exercises without overwriting the original repository.
 
 To do this you can follow these steps:
 
--   Go to the [labs Github page](https://github.com/intro-to-data-science-25/labs)
+-   Go to the [labs Github
+    page](https://github.com/intro-to-data-science-25/labs)
 -   Click on the "Fork" button in the top right corner of the page.
--   This will create a copy of the repository in your own GitHub account.
--   You can then clone this forked repository to your local machine using the "Code" button and copying the URL just like we did in the previous session with our own repositories.
+-   This will create a copy of the repository in your own GitHub
+    account.
+-   You can then clone this forked repository to your local machine
+    using the "Code" button and copying the URL just like we did in the
+    previous session with our own repositories.
 
-Whenever the original repository is updated, an option to `sync fork` will appear on your forked repository page in Github. Clicking this will update your fork with the latest changes we make to the labs. You can then pull those changes to your local cloned version of the repository.
+Whenever the original repository is updated, an option to `sync fork`
+will appear on your forked repository page in Github. Clicking this will
+update your fork with the latest changes we make to the labs. You can
+then pull those changes to your local cloned version of the repository.
 
-Note: This is by far the easiest way of doing things, but if you want to do everything properly through the command line, you would set the original  labrepository as an upstream remote to fetch and merge changes from the original repository into your local clone. A full walkthrough of this can be found [here.](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo#configuring-git-to-sync-your-fork-with-the-upstream-repository)
+Note: This is by far the easiest way of doing things, but if you want to
+do everything properly through the command line, you would set the
+original labrepository as an upstream remote to fetch and merge changes
+from the original repository into your local clone. A full walkthrough
+of this can be found
+[here.](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo#configuring-git-to-sync-your-fork-with-the-upstream-repository)
 
 # 1. More Iteration with `purrr` `r emo::ji("repeat")`
 
-We saw some examples of iteration with `purrr::map()` in the last session. Now that we have also covered it in the Lectures let's do a few more examples to get more comfortable with this approach.
+We saw some examples of iteration with `purrr::map()` in the last
+session. Now that we have also covered it in the Lectures let's do a few
+more examples to get more comfortable with this approach.
 
 ## Quick Recap
 
 Remember the `map()` family syntax:
-```r
+
+``` r
 map(.x, .f, ...)
 ```
+
 -   `purrr::map()` returns a list.
 -   `purrr::map_lgl()` returns a logical vector
 -   `purrr::map_int()` returns an integer vector.
 -   `purrr::map_dbl()` returns a double vector.
 -   `purrr::map_chr()` returns a character vector.
 
----
+------------------------------------------------------------------------
 
 ## Introduction to Nesting
 
-Sometimes we want to perform the same analysis on different groups in our data. For example, we might want to calculate summary statistics for each species of penguin, or fit a model for each country in a dataset.
+Sometimes we want to perform the same analysis on different groups in
+our data. For example, we might want to calculate summary statistics for
+each species of penguin, or fit a model for each country in a dataset.
 
-**Nesting** is a powerful technique that helps us organize grouped data. When we nest data:
+**Nesting** is a powerful technique that helps us organize grouped data.
+When we nest data:
 
-1. We group our data by some variable(s)
-2. All the remaining data for each group gets "packed" into a special list-column
-3. Each row now represents one group, with all that group's data stored in the list-column
+1.  We group our data by some variable(s)
+2.  All the remaining data for each group gets "packed" into a special
+    list-column
+3.  Each row now represents one group, with all that group's data stored
+    in the list-column
 
-```r
+``` r
 # Before nesting: regular dataframe
 penguins
 #> species    bill_length_mm  bill_depth_mm  ...
@@ -108,7 +137,9 @@ penguins %>%
 #> Gentoo     <tibble [124 × 7]>
 ```
 
-The magic happens when we combine nesting with `purrr::map()` - we can apply the same function to each group's data, then unnest the results to get a clean summary table.
+The magic happens when we combine nesting with `purrr::map()` - we can
+apply the same function to each group's data, then unnest the results to
+get a clean summary table.
 
 ## Exercise: Penguin Flipper analysis
 
@@ -120,83 +151,116 @@ library(tidyverse)
 data(penguins)
 ```
 
-:::alert-info
-**Exercise 1**
-Group the penguins by species and nest the remaining data into a column called data. Save the result in a new dataframe called `penguins_nested`:
+::: alert-info
+**Exercise 1** Group the penguins by species and nest the remaining data
+into a column called data. Save the result in a new dataframe called
+`penguins_nested`:
 
 ```{r, echo= FALSE, eval= FALSE}
 # Your code here: Use group_by() and nest()
+
+penguins_nested <- penguins |>
+  group_by(species)|>
+  nest()
 ```
 :::
-:::alert-info
-**Exercise 2**
-Write a function called `summarize_bills` that takes a dataframe and returns:
-- `count`: number of rows
-- `mean_bill_length`: mean bill length (handle NAs)
-- `max_bill_length`: max bill length (handle NAs)
+
+::: alert-info
+**Exercise 2** Write a function called `summarize_bills` that takes a
+dataframe and returns: - `count`: number of rows - `mean_bill_length`:
+mean bill length (handle NAs) - `max_bill_length`: max bill length
+(handle NAs)
 
 ```{r, echo= FALSE, eval= FALSE}
 summarize_bills <- function(df) {
   # Your code here: use summarise() to create the three variables
+  df |>
+    summarise(
+      count = n(),
+      mean_bill_length = mean(bill_length_mm, na.rm=T),
+      max_bill_length = max(bill_length_mm, na.rm=T)
+  )
 }
 
 # Test your function on the first species
 summarize_bills(penguins_nested$data[[1]])
 ```
 :::
-:::alert-info
-**Exercise 3**
-Add a new column called `bill_stats` to `penguins_nested` that applies your `summarize_bills` function to each nested dataframe using `map()`:
+
+::: alert-info
+**Exercise 3** Add a new column called `bill_stats` to `penguins_nested`
+that applies your `summarize_bills` function to each nested dataframe
+using `map()`:
 
 ```{r, echo= FALSE, eval= FALSE}
 penguins_nested <- penguins_nested %>%
   # Your code here: mutate() with map()
+  mutate(
+    bill_stats = map(data, summarize_bills)
+    )
 
 # Look at the result
 penguins_nested
 ```
-
 :::
-:::alert-info
-**Exercise 4**
-Create a clean summary table by selecting just `species` and `bill_stats`, then unnesting:
+
+::: alert-info
+**Exercise 4** Create a clean summary table by selecting just `species`
+and `bill_stats`, then unnesting:
 
 ```{r, echo= FALSE, eval= FALSE}
 penguins_summary <- penguins_nested %>%
   # Your code here: select() and unnest()
+  select(species, bill_stats)|>
+  unnest()
 
 penguins_summary
 ```
 :::
-:::alert-info
+
+::: alert-info
 **Exercise 5**
 
-Write the complete pipeline from the original `penguins` data to the final summary in one go:
+Write the complete pipeline from the original `penguins` data to the
+final summary in one go:
 
 ```{r, echo= FALSE, eval= FALSE}
 final_summary <- penguins %>%
   # Your complete pipeline here
+  group_by(species)|>
+  nest()|>
+  mutate(data, bill_stats = map(data, summarize_bills))|>
+  select(species, bill_stats)|>
+  unnest()
 
 final_summary
 ```
 :::
+
 # 2. Automation of Projects `r emo::ji("robot_face")`
 
-When working on a data science project, you will often have to repeat the same steps multiple times. For example, you might have to:
+When working on a data science project, you will often have to repeat
+the same steps multiple times. For example, you might have to:
 
-- import data
-- clean data
-- run analyses
-- create visualizations
-- generate reports
-- etc.
+-   import data
+-   clean data
+-   run analyses
+-   create visualizations
+-   generate reports
+-   etc.
 
-To avoid doing these steps manually every time, you can automate them using pipelines. We already saw pipelines in the context of the `dplyr` package using the pipe operator (`%>%` or `|>`), now we will look at how to automate entire workflows of R scripts using the `source()` function.
+To avoid doing these steps manually every time, you can automate them
+using pipelines. We already saw pipelines in the context of the `dplyr`
+package using the pipe operator (`%>%` or `|>`), now we will look at how
+to automate entire workflows of R scripts using the `source()` function.
 
 ## Folder structure and thinking in pipelines `r emo::ji("gear")`
 
-When working on a data science project, it is important to keep your files organized. An example folder structure based on the example you saw in the lecture might look as follows:
-```
+When working on a data science project, it is important to keep your
+files organized. An example folder structure based on the example you
+saw in the lecture might look as follows:
+
+```         
 lotr_project/
 ├── data/
 │   ├── raw/
@@ -213,42 +277,67 @@ lotr_project/
 └── README.md
 ```
 
-In this example, the `data/` folder contains raw and processed data, the `scripts/` folder contains R scripts that perform specific tasks, and the `outputs/` folder contains figures and tables generated by the scripts. The `Makefile.R` script is the main script that sources the other scripts in the correct order.
+In this example, the `data/` folder contains raw and processed data, the
+`scripts/` folder contains R scripts that perform specific tasks, and
+the `outputs/` folder contains figures and tables generated by the
+scripts. The `Makefile.R` script is the main script that sources the
+other scripts in the correct order.
 
 ## Let's try it ourselves
 
-To work with this example I have created all the files and folders as above in this weeks lab within the lotr_project folder. Try run the `Makefile.R` script to see how it works. You can open the different script and run the makefile line by line to see what each part does.
+To work with this example I have created all the files and folders as
+above in this weeks lab within the lotr_project folder. Try run the
+`Makefile.R` script to see how it works. You can open the different
+script and run the makefile line by line to see what each part does.
 
-:::alert-info
-**Exercise 1**
-Can you add a new script that creates a summary table of the words spoken by Species and Film and saves it to the `outputs/tables/` folder? You can use the `dplyr` package to create the summary table and the `write_tsv()` function to save it as a .tsv file. Don't forget to source your new script in the `Makefile.R` script.
+::: alert-info
+**Exercise 1** Can you add a new script that creates a summary table of
+the words spoken by Species and Film and saves it to the
+`outputs/tables/` folder? You can use the `dplyr` package to create the
+summary table and the `write_tsv()` function to save it as a .tsv file.
+Don't forget to source your new script in the `Makefile.R` script.
 :::
 
-:::alert-info
-**Exercise 2**
-Update the `Makefile.R` script so that it also clears out the table you created in the exercise above.
+::: alert-info
+**Exercise 2** Update the `Makefile.R` script so that it also clears out
+the table you created in the exercise above.
 :::
 
-:::alert-info
-**Exercise 3**
-Do your new script and the 03-plot.R script need to be run sequentially? How could we think about these two script in terms of the pipeline graphs you saw in the lecture?
+::: alert-info
+**Exercise 3** Do your new script and the 03-plot.R script need to be
+run sequentially? How could we think about these two script in terms of
+the pipeline graphs you saw in the lecture?
 :::
 
 ## Scheduling with `cronR` and `taskscheduleR` `r emo::ji("calendar")`
-Now that we have a working pipeline, let's learn how to schedule it to run automatically!
+
+Now that we have a working pipeline, let's learn how to schedule it to
+run automatically!
 
 Task scheduling allows you to:
 
-- Run your pipeline at specific times (daily, weekly, monthly)
-- Process new data automatically
-- Generate reports on a schedule
-- Perform maintenance tasks
+-   Run your pipeline at specific times (daily, weekly, monthly)
+-   Process new data automatically
+-   Generate reports on a schedule
+-   Perform maintenance tasks
 
 ### Aside: Relative vs Absolute Paths `r emo::ji("world_map")`
 
-When working with file paths in R, you can use either relative or absolute paths. So far we have used relative paths as this makes it easier to share code with others. When we schedule tasks however the working directory might not be what we expect, so it is often safer to use absolute paths. A useful package for this is `here` which allows you to construct file paths relative to the root of your project. You will see some examples of this in the code below. (Note that for this reason also, the lotr project as we have set it up above will not work if you just run the `Makefile.R` script, as it uses relative paths. You would have to amend the script to use absulute paths, the `here` package or set your working directory to the lotr_project folder first. Below it is inlcuded just for demonstration.)
+When working with file paths in R, you can use either relative or
+absolute paths. So far we have used relative paths as this makes it
+easier to share code with others. When we schedule tasks however the
+working directory might not be what we expect, so it is often safer to
+use absolute paths. A useful package for this is `here` which allows you
+to construct file paths relative to the root of your project. You will
+see some examples of this in the code below. (Note that for this reason
+also, the lotr project as we have set it up above will not work if you
+just run the `Makefile.R` script, as it uses relative paths. You would
+have to amend the script to use absulute paths, the `here` package or
+set your working directory to the lotr_project folder first. Below it is
+inlcuded just for demonstration.)
 
 ## Scheduling with `cronR` on Mac and Linux `r emo::ji("alarm_clock")`
+
 ```{r eval = FALSE}
 # install.packages("cronR")
 library(cronR)
@@ -269,8 +358,9 @@ cron_ls()
 # To remove a scheduled task
 # cron_rm(id = "lotr_pipeline_daily")
 ```
-`
-### Example cron schedule expressions
+
+\` \### Example cron schedule expressions
+
 ```{r eval = FALSE}
 # Every 5 minutes
 cron_add(command = cron_rscript("script.R"), frequency = "*/5 * * * *")
@@ -289,6 +379,7 @@ cron_add(command = cron_rscript("script.R"), frequency = "0 9 1 * *")
 ```
 
 ## Scheduling with `taskscheduleR` on Windows `r emo::ji("alarm_clock")`
+
 ```{r eval = FALSE}
 # install.packages("taskscheduleR")
 library(taskscheduleR)
@@ -311,6 +402,7 @@ taskscheduler_ls()
 ```
 
 ### Example `taskscheduleR` schedule expressions
+
 ```{r eval = FALSE}
 # Every 5 minutes
 taskscheduler_create(taskname = "lotr_pipeline_5min", rscript = "path/to/your/Makefile.R", schedule = "MINUTE", modifier = 5)
@@ -330,24 +422,31 @@ taskscheduler_create(taskname = "lotr_pipeline_monthly", rscript = "path/to/your
 
 # 3. Debugging `r emo::ji("beetle")`
 
-When you write code, things will inevitably go wrong at some point. You can professionalize the way you:
+When you write code, things will inevitably go wrong at some point. You
+can professionalize the way you:
 
 -   fix unanticipated problems (debugging)
--   let functions communicate problems and take actions based on those communications (condition handling)
--   learn how to avoid common problems before they occur (defensive programming)
+-   let functions communicate problems and take actions based on those
+    communications (condition handling)
+-   learn how to avoid common problems before they occur (defensive
+    programming)
 
-Potential problems are communicated via "conditions" (e.g., errors, warnings, and messages). For example
+Potential problems are communicated via "conditions" (e.g., errors,
+warnings, and messages). For example
 
--   fatal errors are raised by `stop()` and force all execution to terminate
+-   fatal errors are raised by `stop()` and force all execution to
+    terminate
 -   warnings are generated by `warning()` and display potential problems
--   messages are generated by `message()` and can provide informative output on the way
+-   messages are generated by `message()` and can provide informative
+    output on the way
 
 ------------------------------------------------------------------------
 
 ## Debugging workflow
 
 1.  Realize that you have a bug
-2.  Make the bug repeatable: start with big chunk of code and narrow it down to isolate it
+2.  Make the bug repeatable: start with big chunk of code and narrow it
+    down to isolate it
 3.  Figure out where it is
 4.  Fix it and test it
 
@@ -355,7 +454,10 @@ Potential problems are communicated via "conditions" (e.g., errors, warnings, an
 
 ## Debugging tools `r emo::ji("flashlight")`
 
-The following function that calculates the geodesic distance between two points specified by radian latitude/longitude using the Haversine formula (hf); taken from [here](https://goo.gl/GezNGB), as an example. We've inserted some bugs here... `r emo::ji("bug")`
+The following function that calculates the geodesic distance between two
+points specified by radian latitude/longitude using the Haversine
+formula (hf); taken from [here](https://goo.gl/GezNGB), as an example.
+We've inserted some bugs here... `r emo::ji("bug")`
 
 ```{r eval = FALSE}
 geod_dist <- function(lat1, lon1, lat2, lon2, earth.radius = 6371) {
@@ -383,14 +485,20 @@ geod_dist(lat1 = 49.5, lon1 = 8.4, lat2 = 52.5, lon2 = 13.4)
 
 ### Trial and error `r emo::ji("graduation_cap")`
 
-That is, if you see the error right away, try and fix it. `r emo::ji("nerd_face")`.
-One slightly more principled approach is to use a binary search strategy: run only half of the code, see if the error persists. If yes, the bug is in that half, if no, it is in the other half. Repeat until you find the bug.
+That is, if you see the error right away, try and fix it.
+`r emo::ji("nerd_face")`. One slightly more principled approach is to
+use a binary search strategy: run only half of the code, see if the
+error persists. If yes, the bug is in that half, if no, it is in the
+other half. Repeat until you find the bug.
 
 ------------------------------------------------------------------------
 
 ### Making function global `r emo::ji("globe")`
 
-One way to approach debugging is to turn the arguments of the function into global objects (objects you can see in your environment, otherwise the objects are only available within your function). Then you can step through the code line by line to locate the bug.
+One way to approach debugging is to turn the arguments of the function
+into global objects (objects you can see in your environment, otherwise
+the objects are only available within your function). Then you can step
+through the code line by line to locate the bug.
 
 ```{r}
 # make the objects that are otherwise entered as input parameters to your function global
@@ -412,11 +520,19 @@ d = earth_radius * c
 return(d)
 ```
 
-**Problem:** This creates global objects that match arguments names, which can become confusing and cause problems that become obvious when the function is called in a different environment. `r emo::ji("warning")`
+**Problem:** This creates global objects that match arguments names,
+which can become confusing and cause problems that become obvious when
+the function is called in a different environment.
+`r emo::ji("warning")`
 
-> In case you choose this option, it is a good idea to clean your environment afterwards, or simply to remove all the new global objects using `rm()`.
+> In case you choose this option, it is a good idea to clean your
+> environment afterwards, or simply to remove all the new global objects
+> using `rm()`.
 
-**Side note** If you haven't done so already, as a general best practice advise, change the settings in your global options to "never" save the workspace as this can cause similar issues to the example described above.
+**Side note** If you haven't done so already, as a general best practice
+advise, change the settings in your global options to "never" save the
+workspace as this can cause similar issues to the example described
+above.
 
 ```{r,  echo=F}
 knitr::include_graphics("pics/workspace.png", dpi = 100)
@@ -431,15 +547,19 @@ geod_dist(lat1 = 49.5, lon1 = 8.4, lat2 = 52.5, lon2 = 13.4)
 traceback()
 ```
 
-This shows you where the error occurred (but not why). Read from bottom to top (e.g. 1. called function X, 2. called function Y, error occurred in line #6 of function Y)
+This shows you where the error occurred (but not why). Read from bottom
+to top (e.g. 1. called function X, 2. called function Y, error occurred
+in line #6 of function Y)
 
 ------------------------------------------------------------------------
 
 ### Using `browser()` `r emo::ji("fox")`
 
-You can add `browser()` into your function somewhere before you expect the error.
+You can add `browser()` into your function somewhere before you expect
+the error.
 
-**Note:** While `browser()` works best within a clean .R script, it can also help with troubleshooting within .Rmd files.
+**Note:** While `browser()` works best within a clean .R script, it can
+also help with troubleshooting within .Rmd files.
 
 ```{r eval = FALSE}
 geod_dist <- function(lat1, lon1, lat2, lon2, earth.radius = 6371) {
@@ -461,19 +581,25 @@ geod_dist <- function(lat1, lon1, lat2, lon2, earth.radius = 6371) {
 geod_dist(lat1 = 49.5, lon1 = 8.4, lat2 = 52.5, lon2 = 13.4)
 ```
 
-You can then interactively work through the function line by line by hitting enter in the console or send additional lines of code.
+You can then interactively work through the function line by line by
+hitting enter in the console or send additional lines of code.
 
 ```{r, echo=F}
 knitr::include_graphics("pics/browser.png", dpi = 100)
 ```
 
-**Note:** Other helpful tools for debugging R functions written by someone else include `debug()` which automatically opens a debugger at the start of a function call and `trace()` which allows temporary code modifications inside functions that you can't easily access to (e.g. `ggplot()`).
+**Note:** Other helpful tools for debugging R functions written by
+someone else include `debug()` which automatically opens a debugger at
+the start of a function call and `trace()` which allows temporary code
+modifications inside functions that you can't easily access to (e.g.
+`ggplot()`).
 
 ------------------------------------------------------------------------
 
 ## Condition handling ``` r emo::ji("ant")``r emo::ji("ant")``r emo::ji("bee")``r emo::ji("ant") ```
 
-Sometimes errors come expected, and you want to handle them automatically, e.g.:
+Sometimes errors come expected, and you want to handle them
+automatically, e.g.:
 
 -   model fails to converge
 -   file download fails
@@ -534,7 +660,9 @@ class(success)
 class(failure) 
 ```
 
-Use `possibly()`, a function similar to `try()` from the purrr package when applying a function to multiple elements in a list. You can also provide a default value (here: `NA`) in case execution fails.
+Use `possibly()`, a function similar to `try()` from the purrr package
+when applying a function to multiple elements in a list. You can also
+provide a default value (here: `NA`) in case execution fails.
 
 ```{r eval = FALSE}
 library(purrr)
@@ -549,7 +677,11 @@ results_b <- purrr::map(elements, purrr::possibly(log, NA))
 
 ### Condition handling with `tryCatch()` `r emo::ji("fishing_pole")`
 
-React to conditions, such as errors, warnings, messages, or interruptions, with certain actions "handlers". These are functions that map conditions to condition handler functions that can do anything but typically will return a value or create a more informative error message:
+React to conditions, such as errors, warnings, messages, or
+interruptions, with certain actions "handlers". These are functions that
+map conditions to condition handler functions that can do anything but
+typically will return a value or create a more informative error
+message:
 
 ```{r}
 show_condition <- function(code) { 
@@ -564,7 +696,8 @@ show_condition(warning("?!"))
 show_condition(message("?"))
 ```
 
-If no condition is captured, `tryCatch()` returns the value of the input:
+If no condition is captured, `tryCatch()` returns the value of the
+input:
 
 ```{r}
 show_condition(10+5)
@@ -580,7 +713,10 @@ model_selection <- function(data, formula1, formula2){
 }
 ```
 
-You try to fit `formula1` to the data, however, maybe it is a model with very strict requirements. You might also have a more robust (but maybe less interesting) `formula2` that you might fit if the requirements are not met and the modeling process throws an error.
+You try to fit `formula1` to the data, however, maybe it is a model with
+very strict requirements. You might also have a more robust (but maybe
+less interesting) `formula2` that you might fit if the requirements are
+not met and the modeling process throws an error.
 
 Make more informative error messages:
 
@@ -602,20 +738,24 @@ read.csv_new("code/dummy.csv")
 
 -   "making code fail in a well-defined manner"
 
--   "fail fast": as soon as something wrong is discovered, signal an error
+-   "fail fast": as soon as something wrong is discovered, signal an
+    error
 
 -   Three rules to implement the "fail fast" principle:
 
 1.  be strict about what you accept (e.g., only scalars)
-2.  avoid functions that use non-standard evaluation, such as `subset()`, `transform()`, or `with()`
-3.  avoid functions that return different types of output depending on their input (e.g. `sapply`)
+2.  avoid functions that use non-standard evaluation, such as
+    `subset()`, `transform()`, or `with()`
+3.  avoid functions that return different types of output depending on
+    their input (e.g. `sapply`)
 
 ------------------------------------------------------------------------
 
-
 ## Debugging Exercise `r emo::ji("skull")`
 
-Here is a piece of code that comes with a few flaws. As an optional take-home exercise, please identify the bugs, remove them and report what you have done using comments.
+Here is a piece of code that comes with a few flaws. As an optional
+take-home exercise, please identify the bugs, remove them and report
+what you have done using comments.
 
 ```{r, eval = FALSE}
 # load packages
@@ -683,11 +823,21 @@ summary(log_traffic_model <- lm(fmla, legislator_df))
 sjPlot::tab_model(log_traffic_model)
 ```
 
+# <b style="color:#2f1a61">Acknowledgements</b> {.unnumbered}
 
+This script was drafted by [Tom Arendt](https://github.com/tom-arend)
+and [Lisa Oswald](https://lfoswald.github.io/), with contributions by
+[Steve Kerr](https://smkerr.github.io/), [Hiba
+Ahmad](https://github.com/hiba-ahmad), [Carmen
+Garro](https://github.com/cgarroca), [Sebastian
+Ramirez-Ruiz](https://seramirezruiz.github.io/), [Killian
+Conyngham](https://github.com/Killian-Conyngham) and [Carol
+Sobral](https://github.com/cbsobral). It draws heavily on the materials
+for the Introduction to R workshop within the Data Science Seminar
+series at Hertie, created by [Therese Anders](http://therese.rbind.io/),
+Statistical Modeling and Causal Inference by Sebastian Ramirez-Ruiz and
+Lisa Oswald.
 
-
-# <b style="color:#2f1a61">Acknowledgements</b> {-}
-
-This script was drafted by [Tom Arendt](https://github.com/tom-arend) and [Lisa Oswald](https://lfoswald.github.io/), with contributions by [Steve Kerr](https://smkerr.github.io/), [Hiba Ahmad](https://github.com/hiba-ahmad), [Carmen Garro](https://github.com/cgarroca), [Sebastian Ramirez-Ruiz](https://seramirezruiz.github.io/), [Killian Conyngham](https://github.com/Killian-Conyngham) and [Carol Sobral](https://github.com/cbsobral). It draws heavily on the materials for the Introduction to R workshop within the Data Science Seminar series at Hertie, created by [Therese Anders](http://therese.rbind.io/), Statistical Modeling and Causal Inference by Sebastian Ramirez-Ruiz and Lisa Oswald.
-
-The Lord of the Rings dialogue analysis example is based on an the Github for STAT545 at UBC. You can find their version [here](https://github.com/STAT545-UBC/STAT545-UBC-original-website/blob/master/automation01_slides/slides.md).
+The Lord of the Rings dialogue analysis example is based on an the
+Github for STAT545 at UBC. You can find their version
+[here](https://github.com/STAT545-UBC/STAT545-UBC-original-website/blob/master/automation01_slides/slides.md).
