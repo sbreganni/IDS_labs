@@ -1,3 +1,81 @@
+# Iteration recap exercises: ####
+
+# Exercise 1: Nest the Data
+penguins_nested <- penguins %>%
+  group_by(species) %>%
+  nest()
+
+# Exercise 2: Create Summary Function
+summarize_bills <- function(df) {
+  df %>%
+    summarise(
+      count = n(),
+      mean_bill_length = mean(bill_length_mm, na.rm = TRUE),
+      max_bill_length = max(bill_length_mm, na.rm = TRUE)
+    )
+}
+
+# Test
+summarize_bills(penguins_nested$data[[1]])
+
+# Exercise 3: Apply with map()
+penguins_nested <- penguins_nested %>%
+  mutate(bill_stats = map(data, summarize_bills))
+
+# Exercise 4: Unnest Results
+penguins_summary <- penguins_nested %>%
+  select(species, bill_stats) %>%
+  unnest(bill_stats)
+
+# Exercise 5: Complete Pipeline
+final_summary <- penguins %>%
+  group_by(species) %>%
+  nest() %>%
+  mutate(bill_stats = map(data, summarize_bills)) %>%
+  select(species, bill_stats) %>%
+  unnest(bill_stats)
+
+final_summary
+
+
+# Automation exercises: ####
+# #**Exercise 1**
+
+## import clean data
+lotr_dat <- read_tsv("./session-03-automation/lotr_project/data/processed/lotr_clean.tsv") %>% 
+  # reorder Species based on words spoken
+  mutate(Species = reorder(Species, Words, sum))
+
+# create summary table by species and movie
+summary_table <- lotr_dat %>%
+  group_by(Species, Film) %>%
+  summarize(
+    Characters = n(),
+    Words = sum(Words),
+    .groups = "drop"
+  )
+
+# save summary table
+write_tsv(summary_table, "./session-03-automation/lotr_project/outputs/tables/lotr_summary_table.tsv")
+
+# #**Exercise 2**
+## clean out any previous work
+outputs <- c("./session-03-automation/lotr_project/data/raw/lotr_raw.tsv",
+             "./session-03-automation/lotr_project/data/processed/lotr_clean.tsv",
+             "./session-03-automation/lotr_project/outputs/tables/lotr_summary_table.tsv",
+             list.files(path =  "./session-03-automation/lotr_project/outputs/figures/",pattern = "*.png$", full.names = TRUE))
+file.remove(outputs)
+
+#OR
+
+# clean out any previous work
+files_to_remove <- c(
+  "./session-03-automation/lotr_project/data/raw/lotr_raw.tsv",
+  "./session-03-automation/lotr_project/data/processed/lotr_clean.tsv",
+  list.files(path =  "./session-03-automation/lotr_project/outputs/tables/",pattern = "*.tsv$", full.names = TRUE),
+  list.files(path =  "./session-03-automation/lotr_project/outputs/figures/",pattern = "*.png$", full.names = TRUE))
+)
+
 
 # Take home debugging exercise ####
 # load packages
