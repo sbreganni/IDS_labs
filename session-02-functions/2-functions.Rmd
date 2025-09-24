@@ -1,5 +1,6 @@
 ---
-title: "GitHub, Functions and Iteration"
+title: "Functions, Iteration and Project Management"
+subtitle: "Functional programming in R"
 author: "Killian Conyngham and Carol Sobral"
 date: "(Fall 2025) Introduction to Data Science"
 output: 
@@ -47,289 +48,21 @@ background-color: #2f1a61;
 
 </style>
 ```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
+We will learn about functional programming in R. We will teach you one of the most important parts of coding with R (and I cannot stress enough how important it is). Built-in functions and packages can only get you so far, there will be times when it is both easier and more efficient to create your own. Writing your own functions is a key skill in any coding language really, and R is no different. Unfortunately, writing your own function also requires you to be able to find and fix bugs that will inevitably creep into your code. For all of these reasons, this lab will teach you how to:
 
-Today, we will start by setting up a basic workflow with GitHub. This workflow will make it easier to keep track of your work and collaborate with others. From there, we will learn about functional programming in R. This is one of the most important parts of coding with R (and I cannot stress enough how important it is). Built-in functions and packages can only get you so far. There will be times when it is both easier and more efficient to create your own.
-
-This lab will teach you how to:
-
--   setup a basic workflow with R Studio and GitHub
 -   write your own functions
 -   iterate functions over multiple inputs
 -   vectorise your functions using the purrr package
-
-
-------------------------------------------------------------------------
-
-
-# 1   . Git and GitHub (Condensed Version)
-
-This is the condensed version of the version control extra session, which can be found in full [here](https://github.com/intro-to-data-science-25/labs/tree/main/session-00-version-control). We will create your first repo on GitHub and see how we can use it to keep a record of all the changes that were ever made to your code. This is an essential component of collaborative coding efforts, but can also be immensely beneficial for your own solo projects.
-
-The structure of this session is as follows:
-
-1.   Create a new repo on GitHub and initialize it
-1.   Clone this repo to your local machine
-1.   Make some changes to a file
-1.   Stage these local changes
-1.   Commit them to our Git history with a helpful message
-1.   Pull from the GitHub repo just in case anyone else made changes too (not expected here, but good practice).
-1.   Push our changes to the GitHub repo.
-
-Before we get into the nitty-gritty of this week's session, I would like to suggest you all [download GitHub Desktop](https://desktop.github.com/). It is a GUI that lets you interact with GitHub and might be an additional option if your do not want to rely on RStudio or the Command Line alone. 
-
-There are a number of different GUIs that you can try out and play around with. Some are better than others. An example of another free GUI like GitHub Desktop is [GitKraken](https://www.gitkraken.com/).
+-   how to setup a basic workflow with R Studio and GitHub
 
 ------------------------------------------------------------------------
 
-
-## Suggested Workflow `r emo::ji("surfer")`
-
-
-This is the recommended workflow that you should employ when you work with Git. You can see it as a sort of recipe that you should follow under most circumstances. At each stage you can find the instructions for working through both the Command Line and through RStudio. **Be aware** however that these are **separate** processes that should not be mixed. Either you use the shell for version control or you use RStudio or you use GitHub Desktop.
-
-### 1. Create a new repo on GitHub
-
--   Go to [your github page](https://github.com) and make sure you are logged in.
-
--   Click green "New repository" button. Or, if you are on your own profile page, click on "Repositories", then click the green "New" button.
-
--   How to fill this in:
-
-    -   Repository name: my_first_repo (or whatever you want).
-    -   Description: "figuring out how this works" (or whatever, but some text is good for the README).
-    -   Select Public.
-    -   YES Initialize this repository with a README.
-    -   For everything else, just accept the default.
-
-Great, now that you have created a new repo on GitHub, it is important to note that you **should always** create a repo **prior** to starting your work in RStudio.
-
-
-### 2. Clone it to your local machine {.tabset}
-
-Whatever way you plan on cloning this repo, you first need to copy the URL identifying it. Luckily there is another green button "Code" that allows you to do just that. Copy the HTTPS link for now. It will look something like this <https://github.com/your-git-username/my_first_repo.git>.
-
-
-#### Using GitHub Desktop
-
-Here is a short gif on how to clone a repo with GitHub Desktop:
-
-```{r, echo=FALSE, out.width="85%", fig.cap="", fig.align="center"}
-knitr::include_graphics("./pics/github_desktop_cloning.gif")
-```
-
-#### Using Rstudio
-
-In RStudio, go to:
-
-File \> New Project \> Version Control \> Git.
-
-In the "repository URL"-box paste the URL of your new GitHub repository.
-
-Do not just create some random directory for the local copy. Instead think about how you organize your files and folders and make it coherent.
-
-I always suggest that with any new R-project you "Open in new session".
-
-Finally, click the "Create Project" to create a new directory. What you get are three things in one:
-
--   a directory or "folder" on your computer
--   a Git repository, linked to a remote GitHub repository
--   an RStudio Project
-
-In the absence of other constraints, I suggest that all of your R projects have exactly this set-up.
-
-
-#### Using the Command Line
-
-Open the Terminal on your laptop.
-
-Be sure to check what directory you're in. `$ pwd` displays the working directory. `$ cd` is the command to change directory.
-
-Clone a repo into your chosen directory.
-
-```{bash, eval=F}
-cd ~/teaching/2024-ids
-git clone https://github.com/your-git-username/my_first_repo.git
-
-```
-
-Check whether it worked:
-
-```{bash, eval=F}
-cd ~/teaching/2024-ids/my_first_repo
-git log
-git status
-```
-
-###  {.unlisted .unnumbered}
-
-
-### 3. Make changes to a file {#code}
-
-To showcase how useful Git can be, we first need to add some files to our repo. For now there should only be the .gitignore and the README file. While we do this we might as well review some of the stuff we encountered last week.
-
--   So let's create a new R script and save it in the directory that we just cloned.
-
--   First load/install necessary packages (the tidyverse suffices here)
-
-```{r, eval=F}
-
-# Set-up your script ------------------------------------------------------
-
-# install.packages(c("tidyverse", "gapminder", "pacman")) # uncomment if already installed
-pacman::p_load(tidyverse, gapminder)
-
-```
-
--   Then load the data you want to work with into R.
-
-```{r, eval=F}
-
-# Load your Data into R ---------------------------------------------------
-
-data(gapminder)
-head(gapminder)
-
-```
-
--   Finally, start cleaning your data.
-
-```{r, eval=F}
-
-# Clean your Data ---------------------------------------------------------
-
-gapminder_clean <- gapminder %>% 
-  dplyr::rename(life_exp = lifeExp, gdp_per_cap = gdpPercap) %>% 
-  dplyr::mutate(gdp = pop * gdp_per_cap)
-
-```
-
-
-
-###  {.unlisted .unnumbered}
-
-
-### 4. Stage your Changes and Commit {.tabset}
-
-Before we get on to the next step, it is a good idea to save this newly created script and give it a name. Now that your changes are saved locally we need to let Git know.
-
-
-#### Using GitHub Desktop
-
-Changed or added files are automatically staged in GitHub Desktop. The GUI also displays (where possible) the changes that were made
-
-You only really need to commit the changes with a nice little summary or message.
-
-```{r, echo=FALSE, out.width="85%", fig.cap="", fig.align="center"}
-knitr::include_graphics("./pics/github_desktop_stage_commit.gif")
-```
-
-
-#### Using RStudio
-
-In the Environment/History panel a new tab called "git" should have appeared.
-
--   Click on it and it should display all the changed and new files in your directory.
--   Now you can select which files you want to stage. Simply tick the box next to your chosen files.
--   Hit the Commit Button and a new window should open up.
--   In this window you can quickly add a helpful message to mark exactly what you did. (Do not neglect this, as Git won't allow you to commit without it. Plus, a clear message will help both you and your collaborators to understand your changes.)
-
-This method has the clear advantage of being extremely intuitive. However you are limited to selecting and staging individual files.
-
-
-#### Using the Command Line
-
-Stage ("add") a file or group of files. This allows you to stage specific individual files such as the README file for example.
-
-```{bash, eval=F}
-git add NAME-OF-FILE-OR-FOLDER
-```
-
-Alternatively, you could stage all files (whether updated or not):
-
-```{bash, eval=F}
-git add -A
-```
-
-Or you could stage updated files only (modified or deleted, but not new):
-
-```{bash, eval=F}
-git add -u
-```
-
-Finally, you can also only stage new files (not updated ones).
-
-```{bash, eval=F}
-git add .
-```
-
-Having done so, you are now ready to commit these changes!
-
-```{bash, eval=F}
-git commit -m "Helpful message"
-
-```
-
-As you can imagine, the command shell with its different options (and there are more beyond the staging phase), can be quicker and more flexible than your GUI interface, especially for experienced users.
-
-###  {.unlisted .unnumbered}
-
-
-### 5. Pulling and Pushing your commits {.tabset}
-
-This part of the version control workflow should be relatively easy. The most important thing to remember is that you should always **pull** before you **push**. The reason for this is that in collaborative projects someone else might have pushed changes to the same file you were working on. This can lead to conflicts that should be avoided, if possible.
-
-#### Using GitHub Desktop
-
-It is not really straightforward to pull before pushing with GitHub Desktop. Given that there is no prominent pull button, you need to actively remember to do so prior to pressing the blue push button.
-
-```{r, echo=FALSE, out.width="85%", fig.cap="", fig.align="center"}
-knitr::include_graphics("./pics/github_desktop_pull_and_push.gif")
-```
-
-
-#### Using RStudio
-
-In RStudio you should see a change in the **git** tab. It should now read: "Your branch is ahead of 'origin/main' by 1 commit"
-
-As long as this information is displayed, you know that you need to pull and push your commit.
-
-To do this simply click on the blue arrow pointing down to **pull** from your main repo, before clicking on the green arrow pointing upwards to **push** your commits.
-
-
-#### Using the Command Line
-
-There are only two commands you need to remember here and they are pretty intuitive:
-
-To pull from the main repo:
-
-```{bash, eval=F}
-git pull
-```
-
-And to push your commits:
-
-```{bash, eval=F}
-git push
-```
-
-
-------------------------------------------------------------------------
-
-
-
-## Practice Assignment Setup
-
-We'll be using GitHub for the assignments. Let's take a look at the [practice assignment](https://classroom.github.com/a/hcc-Z6C7) to get familiar with the workflow.
-
-
-
-
-# 2. Functions with `R`
-
+# 1. Functions with `R`
 
 ## Quick review: lists `r emo::ji("page_with_curl")`
 
@@ -354,8 +87,13 @@ library(gapminder)
 head(gapminder) 
 ```
 
-Lists are very useful when you start writing your own functions and iterating through them using the `purrr` family of functions.
+Checking:
 
+```{r}
+as.list(head(gapminder))
+```
+
+Lists are very useful when you start writing your own functions and iterating through them using the `purrr` family of functions.
 
 ------------------------------------------------------------------------
 
@@ -369,7 +107,7 @@ Functions allow you to automate tasks in a more powerful and general way. Writin
 
 2.  You eliminate the chance of making incidental mistakes when you copy and paste (i.e. updating a variable name in one place, but not in another).
 
-3. You can give functions descriptive names that make your code easier to understand.
+3.  You can give functions descriptive names that make your code easier to understand.
 
 You can read more on functions in [this section](https://r4ds.had.co.nz/functions.html#functions) of Rfor Data Science.
 
@@ -397,7 +135,7 @@ There are three key steps to creating a new function:
 
 1.  Pick a **name** for the function. We'll use `zscale` because this function re-scales (or "z-transforms") a vector to have a mean of 0 and a standard deviation of 1.
 
-2. List the **inputs**, or **arguments**, to the function inside the brackets. Here we have just one argument. If we had more, the call would look like this: `function(x, y, z)`.
+2.  List the **inputs**, or **arguments**, to the function inside the brackets. Here we have just one argument. If we had more, the call would look like this: `function(x, y, z)`.
 
 3.  Place the code you have developed in the **body** of the function. The body of the function is represented by a `{}` block that immediately follows the `function(...)` call.
 
@@ -417,7 +155,6 @@ zscale <- function(x) {
   (x - mean(x, na.rm = T) / sd(x, na.rm = T))
 }
 ```
-
 
 Now instead of repeating that long formula four times (and risking copy-paste errors), we can simply use:
 
@@ -477,7 +214,7 @@ Note that there is still a lot of repetition in the example above. We can get ri
 
 ------------------------------------------------------------------------
 
-First, let's do one last exercise with functions. We will work with `palmerpenguins` again. 
+First, let's do one last exercise with functions. We will work with `palmerpenguins` again.
 
 ```{r, eval=T}
 library(palmerpenguins)
@@ -487,10 +224,10 @@ str(penguins)
 
 ------------------------------------------------------------------------
 
-:::alert-info
+::: alert-info
 **Exercise 1:**
 
-Can you write a function to calculate the mode for a variable in the data? Let's call it `get_mode`. 
+Can you write a function to calculate the mode for a variable in the data?
 
 ```{r}
 # break down the problem into multiple parts
@@ -500,9 +237,9 @@ Can you write a function to calculate the mode for a variable in the data? Let's
 ```
 :::
 
----
+------------------------------------------------------------------------
 
-:::alert-info
+::: alert-info
 **Exercise 2:**
 
 What is the mode for the variable `flipper_length_mm`?
@@ -514,7 +251,7 @@ What is the mode for the variable `flipper_length_mm`?
 
 ------------------------------------------------------------------------
 
-# 3. Iteration `r emo::ji("gear")`
+# 2. Iteration `r emo::ji("gear")`
 
 Iteration helps you when you need to do the same thing to multiple inputs: repeating the same operation on different columns or on different datasets.
 
@@ -536,7 +273,7 @@ df$d <- zscale(df$d)
 
 To solve problems like this one with a `for` loop, we need to think again about the following three components:
 
-1.  **Output:** When you write a loop, you need to decide where the results will go. If you are modifying an existing object, the output is that same object. If you are creating something new, define space for it first, such as an empty vector. Avoid growing the vector inside the loop, because R copies the data each time, which makes the loop much slower (O(n²) behavior). A better way is to store the results in a list during the loop and then combine them into a single vector afterwards. See more on this [here](https://r4ds.had.co.nz/iteration.html).
+1.  **Output:** we already have the output --- it's the same as the input because we are modifying data. If that is not the case, make sure to define a space where the output should go (e.g. an empty vector). If the length of your vector is unknown, you might be tempted to solve this problem by progressively growing the vector. However, this is not very efficient because in each iteration, R has to copy all the data from the previous iterations. In technical terms you get "quadratic" (O(n\^2)) behavior which means that a loop with three tie. See more on this [here](https://r4ds.had.co.nz/iteration.html).mes as many elements would take nine (3\^2) times as long to run. A better solution to save the results in a list, and then combine into a single vector after the loop is don
 
 2.  **Sequence:** we can think about a data frame as a list of columns, so we can iterate over each column with `seq_along(df)`.
 
@@ -556,7 +293,6 @@ for (i in seq_along(df)) {       # seq_along() similar to length()
   df[[i]] <- zscale(df[[i]])     # [[]] because we are working on single elements
 }
 ```
-
 
 Remember, this only works for `for` loops that manipulate existing inputs (i.e. columns in a dataframe). If you want to save the output of your function in a different way, you need to define the object where you wish to store the output **ahead** of the function. In this case, you will see a pre-defined vector and an empty list:
 
@@ -601,10 +337,9 @@ You should also be aware that there is a conditional version of for-loops called
 
 For-loops are not as important in R as they are in other languages because R is a functional programming language. This means that it's possible to wrap up for-loops in a function, and call that function instead of using the for-loop directly. `r emo::ji("bulb")`
 
-
 ### Basic syntax `r emo::ji("pen")`
 
-The `purrr` package provides functions that eliminate the need for many common for loops. The apply family of functions in base R (`apply()`, `lapply()`, `tapply()`, etc.) solve a similar problem, but `purrr` is more consistent and thus is easier to learn. The most useful function will be `map(.x, .f)`, where:
+The `purrr` package provides functions that eliminate the need for many common for loops. The apply family of functions in base R (`apply()`, `lapply()`, `tapply()`, etc.) solve a similar problem, but purrr is more consistent and thus is easier to learn. The most useful function will be `map(.x, .f)`, where:
 
 -   `.x`: is a vector, list, or data frame
 -   `.f`: is a function
@@ -613,7 +348,6 @@ The `purrr` package provides functions that eliminate the need for many common f
 ```{r, echo = FALSE, out.width="49%", out.height="20%",fig.cap="Logic behind vectorised functions (also called functional programming).",fig.show='hold',fig.align='center'}
 knitr::include_graphics("pics/purrr_f_list.png")
 ```
-
 
 Three ways to pass functions to `map()`:
 
@@ -642,7 +376,6 @@ purrr::map(df, \(x) {
 purrr::map(.x = df, ~ mean(.x, na.rm = TRUE))
 
 ```
-
 
 Let's look at this in practice. Imagine you want to calculate the mean of each column in your data frame:
 
@@ -676,17 +409,15 @@ The pattern of looping over a vector, doing something to each element and saving
 
 ------------------------------------------------------------------------
 
-:::alert-info
+::: alert-info
 **Exercise 3:**
 
-Go back to the example above. Since all of the means are numeric, it makes more sense to store them in a vector rather than a list. Which function should we use and how?
+Go back to the example above. Since all of the means are numeric, it makes more sense to store them in a vector rather than a list. Which function should we use?
 :::
 
 ```{r}
 
 ```
-
-
 
 ------------------------------------------------------------------------
 
@@ -703,8 +434,7 @@ The function works exactly the same way as the `purrr::map*` functions for a sin
 
 ------------------------------------------------------------------------
 
-
-:::alert-info
+::: alert-info
 **Exercise 4:**
 
 Write a function that returns both the mean and the standard deviation for the numeric variables in our `palmerpenguins` data.
@@ -714,21 +444,17 @@ Write a function that returns both the mean and the standard deviation for the n
 
 ```
 
-
-
 ------------------------------------------------------------------------
 
-:::alert-info
+::: alert-info
 **Exercise 5:**
 
 Iterate over the relevant columns.
 :::
 
-
 ```{r}
 
 ```
-
 
 ------------------------------------------------------------------------
 
@@ -743,8 +469,405 @@ One such skill is the question of how to integrate tidyverse functions into your
 
 Data masking and tidy selection make interactive data exploration fast and fluid, but they add some new challenges when you attempt to use them indirectly such as in a for loop or a function. [This vignette](https://dplyr.tidyverse.org/articles/programming.html) shows you how to overcome those challenges.
 
+------------------------------------------------------------------------
 
+# 3. Git and Project Management (Condensed Version)
 
+This is the condensed version of the version control extra session, which can be found in full [here](). We will create your first repo on GitHub and see how we can use it to keep a record of all the changes that were ever made to your code. This is an essential component of collaborative coding efforts, but can also be immensely beneficial for your own solo projects.
+
+The structure of this session is as follows:
+
+1.  Create a new repo on GitHub and initialize it
+2.  Clone this repo to your local machine
+3.  Make some changes to a file
+4.  Stage these local changes
+5.  Commit them to our Git history with a helpful message
+6.  Pull from the GitHub repo just in case anyone else made changes too (not expected here, but good practice).
+7.  Push our changes to the GitHub repo.
+
+Before we get into the nitty-gritty of this week's session, I would like to suggest you all [download GitHub Desktop](https://desktop.github.com/). It is a GUI that lets you interact with GitHub and might be an additional option if your do not want to rely on RStudio or the Command Line alone. Instructions to set it up and get it running can be found [here](https://docs.github.com/en/desktop/installing-and-configuring-github-desktop/overview/getting-started-with-github-desktop).
+
+There are a number of different GUIs that you can try out and play around with. Some are better than others. An example of another free GUI like GitHub Desktop is [GitKraken](https://www.gitkraken.com/).
+
+------------------------------------------------------------------------
+
+## Project Management `r emo::ji("mage")`
+
+Before getting to know Git(Hub), it is useful to have a look at R-projects and how you should structure them. Version Control is only useful if your projects can be understood **by a wide range of collaborators**.
+
+First of all, you should always use RStudio projects. They allow you to keep all the files associated with a project together --- input data, R scripts, analytical results, figures etc. When you open a Project you will find a .Rproj file. This file contains all the meta information relevant to your project: settings, working directory, open scripts, encoding etc. If you are curious what exactly lies within it, I suggest you open the .Rproj file with a text editor.
+
+However, projects are only as useful as the organization within them. As we saw in the lecture, a structure like the following one would be a good starting point. This overview can be adapted to requirements inherent to any given project. It might be interesting to spend a little more time looking into the different folders and what they should contain.
+
+```         
+.
++-- src
++-- output
+|   +-- figures
+|   +-- tables
++--data
+|   +-- raw
+|   +-- processed
+|
++-- README.md
++-- run_analyses.R 
++-- .gitignore
+```
+
+We can visualize the folder structure of our repository using the `fs` package's `dir_tree()` function.
+
+``` r
+fs::dir_tree(path = here::here(), recurse = FALSE) # set recurse=TRUE to view sub-levels
+```
+
+``` r
+## /Users/seramirezruiz/2024-ids/labs
+## ├── README.md
+## ├── archive
+## ├── footer.html
+## ├── labs.Rproj
+## ├── practice-scripts
+## ├── session-01-intro
+## ├── session-02-version-control
+## ├── session-03-tidyverse
+## ├── session-04-functions
+## ├── session-05-databases
+## ├── session-06-webdata
+## ├── session-07-web-scraping
+## ├── session-08-modelling
+## ├── session-09-visualization
+## ├── session-10-packaging
+## └── session-11-shiny
+```
+
+### Data Folder
+
+The data folder is, as the name suggests, where your data goes. The "raw" folder should contain the original data that will need to be wrangled and manipulated. It might be that your data is stored in an online relational database, or needs to be accessed through an API. In such cases the raw folder can be dispensed with.
+
+Once you have shaped your data into a format that suits your analysis, the data should be stored in the "processed" folder. If you need to perform certain intermediate steps, it might also be an idea to create a dedicated "temp" folder.
+
+### src folder
+
+This is the folder that should contain your code. You should aim to emulate the workflow of standard data science project within this folder. It is best to separate different aspects of your project into separate scripts. The scripts should be named so as to make it clear what step of the project they represent (i.e. "2-preprocess-data", "3-descriptives" etc.). These scripts should be structured in such a way that they could be executed sequentially through a main script that runs them. A script can be run by calling the `source()` function.
+
+### Relative paths
+
+Within a given script you should always use relative file paths. To access your processed data folder you can use the following file path `"./data/processed.RDa"`. The `.` represents your current working directory, which is set automatically when you open a new R-project.
+
+For more in depth guides and explanations you can look [here](https://www.r-bloggers.com/2018/08/structuring-r-projects/). If you feel like you want to practice this you can find more material [here](https://github.com/intro-to-data-science-23/labs/blob/main/practice-scripts/01-file-management.R). And there is even a package dedicated to file referencing [here](https://cran.r-project.org/web/packages/here/vignettes/here.html).
+
+------------------------------------------------------------------------
+
+## Suggested Workflow `r emo::ji("surfer")`
+
+The following section highlights the recommended workflow that you should employ when you work with Git. You can see it as a sort of recipe that you should follow under most circumstances. At each stage you can find the instructions for working through both the Command Line and through RStudio. **Be aware** however that these are **separate** processes that should not be mixed. Either you use the shell for version control or you use RStudio or you use GitHub Desktop.
+
+### 1. Create a new repo on GitHub
+
+-   Go to [your github page](https://github.com) and make sure you are logged in.
+
+-   Click green "New repository" button. Or, if you are on your own profile page, click on "Repositories", then click the green "New" button.
+
+-   How to fill this in:
+
+    -   Repository name: my_first_repo (or whatever you want).
+    -   Description: "figuring out how this works" (or whatever, but some text is good for the README).
+    -   Select Public.
+    -   YES Initialize this repository with a README.
+    -   For everything else, just accept the default.
+
+Great, now that you have created a new repo on GitHub, it is important to note that you **should always** create a repo **prior** to starting your work in RStudio.
+
+### 2. Clone it to your local machine {.tabset}
+
+Whatever way you plan on cloning this repo, you first need to copy the URL identifying it. Luckily there is another green button "Code" that allows you to do just that. Copy the HTTPS link for now. It will look something like this <https://github.com/your-git-username/my_first_repo.git>.
+
+#### Using GitHub Desktop
+
+Here is a short gif on how to clone a repo with GitHub Desktop:
+
+```{r, echo=FALSE, out.width="85%", fig.cap="", fig.align="center"}
+knitr::include_graphics("./pics/github_desktop_cloning.gif")
+```
+
+#### Using Rstudio
+
+In RStudio, go to:
+
+File \> New Project \> Version Control \> Git.
+
+In the "repository URL"-box paste the URL of your new GitHub repository.
+
+Do not just create some random directory for the local copy. Instead think about how you organize your files and folders and make it coherent.
+
+I always suggest that with any new R-project you "Open in new session".
+
+Finally, click the "Create Project" to create a new directory. What you get are three things in one:
+
+-   a directory or "folder" on your computer
+-   a Git repository, linked to a remote GitHub repository
+-   an RStudio Project
+
+In the absence of other constraints, I suggest that all of your R projects have exactly this set-up.
+
+#### Using the Command Line
+
+Open the Terminal on your laptop.
+
+Be sure to check what directory you're in. `$ pwd` displays the working directory. `$ cd` is the command to change directory.
+
+Clone a repo into your chosen directory.
+
+```{bash, eval=F}
+cd ~/teaching/2024-ids
+git clone https://github.com/your-git-username/my_first_repo.git
+
+```
+
+Check whether it worked:
+
+```{bash, eval=F}
+cd ~/teaching/2024-ids/my_first_repo
+git log
+git status
+```
+
+###  {.unlisted .unnumbered}
+
+------------------------------------------------------------------------
+
+### 3. Make changes to a file {#code}
+
+To showcase how useful Git can be, we first need to add some files to our repo. For now there should only be the .gitignore, the .Rproj and the README file. While we do this we might as well review some of the stuff we encountered last week.
+
+-   So let's create a new R script and save it in the directory that we just cloned.
+
+-   First load/install necessary packages (the tidyverse suffices here)
+
+```{r, eval=F}
+
+# Set-up your script ------------------------------------------------------
+
+# install.packages(c("tidyverse", "gapminder", "pacman")) # uncomment if already installed
+pacman::p_load(tidyverse, gapminder)
+
+```
+
+-   Then load the data you want to work with into R.
+
+```{r, eval=F}
+
+# Load your Data into R ---------------------------------------------------
+
+data(gapminder)
+head(gapminder)
+
+```
+
+-   Finally, start cleaning your data.
+
+```{r, eval=F}
+
+# Clean your Data ---------------------------------------------------------
+
+gapminder_clean <- gapminder %>% 
+  dplyr::rename(life_exp = lifeExp, gdp_per_cap = gdpPercap) %>% 
+  dplyr::mutate(gdp = pop * gdp_per_cap)
+
+```
+
+-   For good measure let's also update our README
+
+###  {.unlisted .unnumbered}
+
+------------------------------------------------------------------------
+
+### 4. Stage your Changes and Commit {.tabset}
+
+Before we get on to the next step, it is a good idea to save this newly created script and give it a name. Also save changes made to the README file. Now that your changes are saved locally we need to let Git know.
+
+#### Using GitHub Desktop
+
+Changed or added files are automatically staged in GitHub Desktop. The GUI also displays (where possible) the changes that were made
+
+You only really need to commit the changes with a nice little summary or message.
+
+```{r, echo=FALSE, out.width="85%", fig.cap="", fig.align="center"}
+knitr::include_graphics("./pics/github_desktop_stage_commit.gif")
+```
+
+#### Using RStudio
+
+In the Environment/History panel a new tab called "git" should have appeared.
+
+-   Click on it and it should display all the changed and new files in your directory.
+-   Now you can select which files you want to stage. Simply tick the box next to your chosen files.
+-   Hit the Commit Button and a new window should open up.
+-   In this window you can quickly add a helpful message to mark exactly what you did. (Do not neglect this, as Git won't allow you to commit without it. Plus, a clear message will help both you and your collaborators to understand your changes.)
+
+This method has the clear advantage of being extremely intuitive. However you are limited to selecting and staging individual files.
+
+#### Using the Command Line
+
+Stage ("add") a file or group of files. This allows you to stage specific individual files such as the README file for example.
+
+```{bash, eval=F}
+git add NAME-OF-FILE-OR-FOLDER
+```
+
+Alternatively, you could stage all files (whether updated or not):
+
+```{bash, eval=F}
+git add -A
+```
+
+Or you could stage updated files only (modified or deleted, but not new):
+
+```{bash, eval=F}
+git add -u
+```
+
+Finally, you can also only stage new files (not updated ones).
+
+```{bash, eval=F}
+git add .
+```
+
+Having done so, you are now ready to commit these changes!
+
+```{bash, eval=F}
+git commit -m "Helpful message"
+
+```
+
+As you can imagine, the command shell with its different options (and there are more beyond the staging phase), can be quicker and more flexible than your GUI interface, especially for experienced users.
+
+###  {.unlisted .unnumbered}
+
+------------------------------------------------------------------------
+
+### 5. Pulling and Pushing your commits {.tabset}
+
+This part of the version control workflow should be relatively easy. The most important thing to remember is that you should always **pull** before you **push**. The reason for this is that in collaborative projects someone else might have pushed changes to the same file you were working on. This can lead to conflicts that should be avoided, if possible.
+
+#### Using GitHub Desktop
+
+It is not really straightforward to pull before pushing with GitHub Desktop. Given that there is no prominent pull button, you need to actively remember to do so prior to pressing the blue push button.
+
+```{r, echo=FALSE, out.width="85%", fig.cap="", fig.align="center"}
+knitr::include_graphics("./pics/github_desktop_pull_and_push.gif")
+```
+
+#### Using RStudio
+
+In RStudio you should see a change in the **git** tab. It should now read: "Your branch is ahead of 'origin/main' by 1 commit"
+
+As long as this information is displayed, you know that you need to pull and push your commit.
+
+To do this simply click on the blue arrow pointing down to **pull** from your main repo, before clicking on the green arrow pointing upwards to **push** your commits.
+
+#### Using the Command Line
+
+There are only two commands you need to remember here and they are pretty intuitive:
+
+To pull from the main repo:
+
+```{bash, eval=F}
+git pull
+```
+
+And to push your commits:
+
+```{bash, eval=F}
+git push
+```
+
+###  {.unlisted .unnumbered}
+
+:::
+
+------------------------------------------------------------------------
+
+## Branches `r emo::ji("tree")`
+
+A really cool feature of version control with Git are *Branches*.
+
+Branches allow you to take a snapshot of your existing repo and try out a whole new idea without affecting your main (i.e. "master") branch.
+
+Only once you (and your collaborators) are 100% satisfied, would you merge it back into the master branch.
+
+Okay, time to play around with branches a little bit!
+
+###  {.unlisted .unnumbered .tabset}
+
+#### Using GitHub Desktop
+
+Given the point-&-click nature of GitHub Desktop, it is very easy to open a new branch. Here is how it is done:
+
+```{r, echo=FALSE, out.width="85%", fig.cap="", fig.align="center"}
+knitr::include_graphics("./pics/github_desktop_open_new_branch.gif")
+```
+
+#### Using RStudio
+
+Creating a new branch within RStudio is very easy.
+
+1.  Under the Git tab in the environment pane you click on the pink L-shaped symbol on the right.
+2.  This will launch a new branch that you can name.
+3.  Switching branches can be accomplished through the drop-down menu next to it.
+
+#### Using the Command Line
+
+Create a new branch on your local machine and switch to it:
+
+```{bash, eval=F}
+git checkout -b NAME-OF-YOUR-NEW-BRANCH
+```
+
+Push the new branch to GitHub:
+
+```{bash, eval=F}
+git push origin NAME-OF-YOUR-NEW-BRANCH
+```
+
+List all branches on your local machine:
+
+```{bash, eval=F}
+git branch
+```
+
+Switch back to (e.g.) the master branch:
+
+```{bash, eval=F}
+$ git checkout master
+```
+
+Delete a branch
+
+```{bash, eval=F}
+$ git branch -d NAME-OF-YOUR-FAILED-BRANCH
+$ git push origin :NAME-OF-YOUR-FAILED-BRANCH
+```
+
+###  {.unlisted .unnumbered .tabset}
+
+------------------------------------------------------------------------
+
+## Pull Requests `r emo::ji("ask")`
+
+Once you are satisfied that the feature, analysis or whatever it was that you did in your branch, has been completed, you need to notify your collaborators and ask them (or yourself) to approve the changes. This is done through Pull Requests.
+
+Pull Requests are best managed directly on GitHub. As a reminder on how you open pull requests, here is the GIF from the lecture again:
+
+```{r, echo=FALSE, out.width="85%", fig.cap="", fig.align="center"}
+knitr::include_graphics("./pics/github-rstudio-pr.gif")
+```
+
+## Dealing with Merge Conflicts `r emo::ji("exploding head")`
+
+------------------------------------------------------------------------
+
+Merge conflicts occur when Git cannot resolve differences in the code between two commits. It only affects commits that apply changes **to the same line of code**. These merge conflicts are part of Git and alert you to the fact that there is a problem that needs to be addressed before continuing. Helpfully, Git marks where the merge conflict occurred within your code, contrasting the conflicting contributions. Unfortunately, it might be more difficult to resolve in larger projects where the problem is not immediately obvious to the human coder. A better approach would be to make extensive use of branches.
 
 ------------------------------------------------------------------------
 
