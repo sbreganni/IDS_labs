@@ -52,40 +52,39 @@ padding: 1em;"
 </style>
 ```
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
-***
+------------------------------------------------------------------------
 
 After talking quite a bit about web data in the last session, today's session is dedicated to data collection - from the web!
 
 What we will cover:
 
-* scraping static webpages
-* scraping multiple static webpages 
-* API calls
-* building up and maintaining you own original sets of web-based data
+-   scraping static webpages
+-   scraping multiple static webpages
+-   API calls
+-   building up and maintaining you own original sets of web-based data
 
-What we will not cover (today): 
+What we will not cover (today):
 
-* scraping dynamic webpages
+-   scraping dynamic webpages
 
----
+------------------------------------------------------------------------
 
 # Why webscrape with R? `r emo::ji("globe")`
 
 Web scraping broadly includes:
 
-+ getting (unstructured) data from the web, and 
-+ bringing it into shape (e.g. cleaning it, getting it into tabular format).
+-   getting (unstructured) data from the web, and
+-   bringing it into shape (e.g. cleaning it, getting it into tabular format).
 
-Why web scrape? While some influential people consider "Data Scientist" `r emo::ji("woman_technologist")` to be the [sexiest job](https://hbr.org/2012/10/data-scientist-the-sexiest-job-of-the-21st-century) of the 21st century (congratulations!), one of the sexiest just emerging academic disciplines is Computational Social Science (CSS). Why is that so? 
+Why web scrape? While some influential people consider "Data Scientist" `r emo::ji("woman_technologist")` to be the [sexiest job](https://hbr.org/2012/10/data-scientist-the-sexiest-job-of-the-21st-century) of the 21st century (congratulations!), one of the sexiest just emerging academic disciplines is Computational Social Science (CSS). Why is that so?
 
-* data abundance online 
-* social interaction online
-* services track social behavior
+-   data abundance online
+-   social interaction online
+-   services track social behavior
 
 Online data are a very promising vehicle to gather insights for you as **data scientist for the common good**.
 
@@ -93,7 +92,7 @@ Online data are a very promising vehicle to gather insights for you as **data sc
 
 Luckily, with `R` we can automate the whole pipeline of downloading, parsing, and post-processing to make our projects easily reproducible.
 
----
+------------------------------------------------------------------------
 
 In general, remember, the basic **workflow for scraping static webpages** is the following.
 
@@ -101,22 +100,19 @@ In general, remember, the basic **workflow for scraping static webpages** is the
 knitr::include_graphics("pics/workflow.png")
 ```
 
----
+------------------------------------------------------------------------
 
 # Scraping static sites with `rvest` `r emo::ji("tractor")`
 
-Who doesn't love Wikipedia? Let's use this as our first, straight forward test case. Let's take a look at the [Cologne page](https://en.wikipedia.org/wiki/Cologne). 
+Who doesn't love Wikipedia? Let's use this as our first, straight forward test case. Let's take a look at the [Cologne page](https://en.wikipedia.org/wiki/Cologne).
 
-:::{.alert-info .pad-box}
-
+::: {.alert-info .pad-box}
 📝 **To keep in mind**
 
 For illustrative purposes, in this tutorial we will parse the page source directly from the live webpage. You should know that the best practice to ensure **reproducibility** would be to download the HTML file locally. In that way, you can avoid issues arising from changes in the content or structure of the source.
-
 :::
 
-
----
+------------------------------------------------------------------------
 
 **Step 1.** Load the packages `rvest` and `stringr`.
 
@@ -126,6 +122,8 @@ library(stringr)
 library(tidyverse)
 library(here)
 ```
+
+The main function for `rvest` is to access html pages:
 
 **Step 2.** Parse the page source. If encoding is necessary, you can add it in the reading html step.
 
@@ -143,6 +141,8 @@ parsed_url |>
 
 ```
 
+Saying that we want paragraph 76 (absolute paths in general) can be dangerous because if anyone changes the website then you lose your content. It's better to use semantics
+
 There are many ways to get the same content:
 
 ```{r}
@@ -153,7 +153,7 @@ There are many ways to get the same content:
 parsed_url |> 
   rvest::html_element(xpath = '//div[contains(@class, "mw-heading mw-heading3")]//h3[@id="Carnival"]/following::p') |> 
   rvest::html_text()
-
+#as long as the header id is still carnival we will get the right paragraph
 
 # Method 2: Absolute path selection  
 # Goes to the exact 76th paragraph in a very specific location in the HTML tree
@@ -164,22 +164,20 @@ parsed_url |>
   rvest::html_text()
 ```
 
-
-
----
+------------------------------------------------------------------------
 
 ## How can we draft our queries? 🤔
 
 In here we present two ways:
 
-+ **Manually inspecting the source code**
-+ **Using selector tools (e.g., Selector Gadget)**
+-   **Manually inspecting the source code**
+-   **Using selector tools (e.g., Selector Gadget)**
 
----
+------------------------------------------------------------------------
 
-**Option 1.** On your page of interest, go to a section/table that you'd like to scrape. Our favorite browser for web scraping is Google Chrome, but others work as well. On Chrome, you go in `View > Developer > inspect elements` or right click on the element you are interested and go to `Inspect`. 
+**Option 1.** On your page of interest, go to a section/table that you'd like to scrape. Our favorite browser for web scraping is Google Chrome, but others work as well. On Chrome, you go in `View > Developer > inspect elements` or right click on the element you are interested and go to `Inspect`.
 
-If you hover over the  code on the right, you should see boxes of different colors framing different elements of the page. Once the part of the page you would like to scrape is selected, right click on the HTML code and `Copy > Copy XPath`. That's it.
+If you hover over the code on the right, you should see boxes of different colors framing different elements of the page. Once the part of the page you would like to scrape is selected, right click on the HTML code and `Copy > Copy XPath`. That's it.
 
 Let's try it with the [Cologne Wikipedia page.](https://en.wikipedia.org/wiki/Cologne#Carnival)
 
@@ -187,14 +185,13 @@ Let's try it with the [Cologne Wikipedia page.](https://en.wikipedia.org/wiki/Co
 knitr::include_graphics("pics/inspect.png")
 ```
 
-
 ```{r}
 parsed_url |> 
   rvest::html_elements(xpath = '//*[@id="mw-content-text"]/div[1]/p[76]') |> 
   rvest::html_text()
 ```
 
----
+------------------------------------------------------------------------
 
 **Option 2.** `SelectorGadget`. You can download the [Chrome Extension](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb?hl=de) `SelectorGadget` and activate it while browsing the page you'd like to scrape from. You will see a selection box moving with your cursor. You select an element by clicking on it. It turns green - and so does all other content that would be selected with the current XPath.
 
@@ -214,29 +211,27 @@ parsed_url |>
   rvest::html_text()
 ```
 
----
+------------------------------------------------------------------------
 
+::: {.alert-info .pad-box}
+**Exercise 1** 🏋
 
-:::{.alert-info .pad-box}
-
-**Exercise 1** 🏋 
-
-Your task is to extract the second paragraph from the "Roman Cologne" section of the Wikipedia page on Cologne any way you like. Use the `parsed_url` object we created earlier. 
-::: 
+Your task is to extract the second paragraph from the "Roman Cologne" section of the Wikipedia page on Cologne any way you like. Use the `parsed_url` object we created earlier.
+:::
 
 ```{r}
-# YOUR ANSWER HERE
+parsed_url |>
+  rvest::html_element(xpath = '//div[contains(@class, "mw-heading mw-heading3")]//h3[@id="Roman_Cologne"]/following::p[2]') |>
+  rvest::html_text()
+
 
 ```
 
-
-
-
----
+------------------------------------------------------------------------
 
 ## Scraping HTML tables `r emo::ji("rocket")`
 
-Oftentimes, we would like to scrape tabular data from the web. 
+Oftentimes, we would like to scrape tabular data from the web.
 
 ```{r, fig.align='center', echo=F, out.width = "85%"}
 knitr::include_graphics("pics/wiki_spotify.png")
@@ -244,9 +239,8 @@ knitr::include_graphics("pics/wiki_spotify.png")
 
 Let's take a look at the [List of Spotify streaming records](https://en.wikipedia.org/wiki/List_of_Spotify_streaming_records) Wikipedia entry.
 
-
 ```{r}
-# load html
+# load html (parsing the url)
 url_p <- rvest::read_html("https://en.wikipedia.org/wiki/List_of_Spotify_streaming_records")
 
 # extract table
@@ -263,39 +257,87 @@ spotify_table <- spotify_table_raw |>
   dplyr::mutate(song = stringr::str_remove_all(song, '\"'), # remove quotation marks from song titles
                 streams_billions = as.numeric(streams_billions) # make stream_billions a numeric variable
                 ) |> 
-  dplyr::slice(1:100) |> # drop last row
+  dplyr::slice(1:100) |> # drop last row (it's not a song)
   dplyr::select(-ref) # drop ref col
 
 head(spotify_table)
 ```
 
-
-:::{.alert-info .pad-box}
-
+::: {.alert-info .pad-box}
 **Exercise 2**
 
 Can you tell us:
 
-a) What does it take to be within the top-100 most streamed songs on Spotify? (i.e., how many streams?)
-b) Which artists have the highest number of most streamed songs? (Note that the `artist_s` string might contain multiple unique artists)
-
+a)  What does it take to be within the top-100 most streamed songs on Spotify? (i.e., how many streams?)
+b)  Which artists have the highest number of most streamed songs? (Note that the `artist_s` string might contain multiple unique artists)
 
 *Bonus at home 🏠*
 
-c) Which artists have the most cumulative streams?
+c)  Which artists have the most cumulative streams?
 :::
 
 ```{r}
-# YOUR ANSWER HERE
+spotify_table |>
+  summarise(
+    min_streams = min(streams_billions),
+      )
+
+spotify_table |>
+  group_by(artist_s) |>
+  summarise(songs_n = n(), 
+            total_streams_billions = sum(streams_billions)) |> 
+  arrange(desc(total_streams_billions))
+
+
 ```
 
----
+We see that some songs are collaborations between artists, to consider them as well we can use regex:
+
+```{r}
+# Definition 1: each artist as an independent artists, duplicating streams
+artists <- spotify_table |>
+  separate_rows(artist_s, sep = "\\s*(and|featuring|&|with)\\s*") |> #this will separate each artist into independent ones
+  mutate(artist_s = str_trim(artist_s)) |> #trim unnecessary whitespaces
+  group_by(artist_s) |>
+  summarise(songs = n(),
+            total_streams_billions = sum(streams_billions)) 
+
+# desired output for b
+artists |> arrange(desc(songs))
+# for c
+artists |> arrange(desc(total_streams_billions))
+
+# Definition 2: considering only the "main" artist
+mains <- spotify_table|>
+  mutate(artist = if_else(str_detect(artist_s,"(and|featuring|&|with)"), #detecting if there is any of these words in the string
+                          str_extract(artist_s, "^(.*?)(?=\\s+(and|with|featuring|&)\\s)"), #extracting the first artist
+                          artist_s),
+  artist = str_trim(artist)
+  ) |>
+  group_by(artist) |>
+  summarise(songs = n(),
+            total_streams_billions = sum(streams_billions))
+
+## breaking down the regular expression pattern: ^(.*?)(?=\\s+(and|with|featuring|&)\\s)
+# ^(.*?) starts with anything and this is a lazy character, so break when the following structure happens
+# (?=pattern) R will check if this pattern occurs but will not output it in the match
+# \\s+(and|with|featuring|&)\\s either of these occur between spaces
+
+
+#for b
+mains |> arrange(desc(songs))
+# for c
+mains |> arrange(desc(total_streams_billions))
+```
+
+------------------------------------------------------------------------
 
 # Scraping multiple pages `r emo::ji("robot")`
 
 Whenever you want to really understand what's going on within the functions of a new R package, it is very likely that there is a relevant article published in the [Journal of Statistical Software](https://www.jstatsoft.org/index). Let's say you are interested in how the journal was doing over the past years [2023-2024].
 
 **Step 1.** Inspect the source. Basically, follow steps to extract the XPath information.
+
 ```{r, eval=F}
 browseURL("http://www.jstatsoft.org/issue/archive")
 ```
@@ -339,7 +381,7 @@ tempwd <- here::here("session-05-web-scraping/data/jstatsoftStats")
 dir.create(tempwd, recursive = TRUE)
 #recursive = TRUE indicates that it should create all directories along the specified path if they don't exist
 
-setwd(tempwd)
+setwd(tempwd) #not best practice!
 ```
 
 **Step 4.** Download the pages. Note that we did not do this step last time, when we were only scraping one page.
@@ -360,7 +402,7 @@ for (i in seq_along(urls_list)) {
         e #the error object (denoted by e) is returned but not acted upon, meaning the error is essentially ignored
     )
     # don't kill their server --> be polite!
-    Sys.sleep(runif(1, 0, 1)) #one random sleep interval of 0-1 seconds
+    Sys.sleep(runif(1, 0, 1)) #one random sleep interval of 0-1 seconds (anytime we do a forloop and scraping we pause R to make sure that the requests don't come in too fast and the server doesn't crash o_O)
   } 
 }
 
@@ -374,6 +416,7 @@ knitr::include_graphics("pics/html_files.png")
 ```
 
 Check whether it worked.
+
 ```{r, eval=F}
 list_files <- list.files(folder, pattern = "0.*") #list of file names that match the regex
 list_files_path <- list.files(folder, pattern = "0.*", full.names = TRUE) #full file paths including directory paths of matched files
@@ -381,11 +424,12 @@ list_files_path <- list.files(folder, pattern = "0.*", full.names = TRUE) #full 
 length(list_files)
 ```
 
-Yay! Apparently, we scraped the HTML pages of 60 articles. 
+Yay! Apparently, we scraped the HTML pages of 60 articles.
 
----
+------------------------------------------------------------------------
 
 **Step 5.** Import files and parse out information. A loop is helpful here!
+
 ```{r, eval=F}
 # define output first
 authors <- character()
@@ -422,24 +466,23 @@ dat <- data.frame(authors = authors, title = title, datePublish = datePublish)
 head(dat)
 ```
 
----
+------------------------------------------------------------------------
 
 **Step 6.** Clean data...
 
 You see, scraping data from multiple pages is no problem in R. Most of the brain work often goes into developing a scraping strategy and tidying the data, not into the actual downloading/scraping part.
 
-
----
+------------------------------------------------------------------------
 
 ## (Git)ignoring files `r emo::ji("no_good_woman")`
 
 In case you scraping project is linked to GitHub (as it will be in your assignment!), it can be useful to **.gitignore** the folder of downloaded files. This means that the folder can be stored in your local directory of the project but will not be synced with the remote (main) repository. Here is information on how to do this using [RStudio](https://carpentries-incubator.github.io/git-Rstudio-course/02-ignore/index.html).
 
-In Github Desktop it is very simple, you do your scraping work, the folder is created in your local repository and before your commit and push these changes, you go on `Repository` > `Repository Settings` > `Ignored Files` and edit the .gitignore file (add the name of the new folder / files you don't want to sync). More generally, it makes sense to exclude .Rproj files, .RData files (and other binary or large data files), draft folders and sensitive information from version control. Remember, git is built to track changes in code, not in large data files.
+In Github Desktop it is very simple, you do your scraping work, the folder is created in your local repository and before your commit and push these changes, you go on `Repository` \> `Repository Settings` \> `Ignored Files` and edit the .gitignore file (add the name of the new folder / files you don't want to sync). More generally, it makes sense to exclude .Rproj files, .RData files (and other binary or large data files), draft folders and sensitive information from version control. Remember, git is built to track changes in code, not in large data files.
 
 Or you can access the .gitignore file in your file explorer `command + shift + .` in macOS.
 
----
+------------------------------------------------------------------------
 
 # On an API far, far away... `r emo::ji("star")`
 
@@ -452,16 +495,17 @@ library(glue)
 
 To get data from an API, we suggest to follow a workflow like this:
 
-1. Read the APIs documentation!
-2. Get the baseurl
-3. Find out the parameters referring to the resources of interest to you
-4. Create a query url from the base url and the query parameters
-5. Run the `GET` function on the query url
-6. Depending on the encoding (usually, it's json), you will need to:
-  + Parse the result with the `content` function
-  + Either use `jsonlite` or `xml2` to parse the json or xml files
+1.  Read the APIs documentation!
+2.  Get the baseurl
+3.  Find out the parameters referring to the resources of interest to you
+4.  Create a query url from the base url and the query parameters
+5.  Run the `GET` function on the query url
+6.  Depending on the encoding (usually, it's json), you will need to:
 
----
+-   Parse the result with the `content` function
+-   Either use `jsonlite` or `xml2` to parse the json or xml files
+
+------------------------------------------------------------------------
 
 Let's have a look at an example, the [Star Wars API](https://swapi.dev/):
 
@@ -471,12 +515,12 @@ browseURL("https://swapi.dev/")
 
 From the API documentation, we can see that the API has six main resource types we can query:
 
-- `films` 
-- `people` 
-- `planets` 
-- `species` 
-- `starships` 
-- `vehicles` 
+-   `films`
+-   `people`
+-   `planets`
+-   `species`
+-   `starships`
+-   `vehicles`
 
 Let's start by querying the films resource:
 
@@ -492,12 +536,11 @@ httr::GET(paste0(baseurl, query)) |> # Make API call
   head(1)
 ```
 
-
----
+------------------------------------------------------------------------
 
 Now let's query the API for people matching "Skywalker". We'll go through this step by step to understand the API response structure.
 
-**Step 1.** Construct the query and check what type of output it returns. 
+**Step 1.** Construct the query and check what type of output it returns.
 
 ```{r}
 query <- 'people/?search=skywalker'
@@ -506,11 +549,9 @@ httr::GET(paste0(baseurl, query)) |>
   httr::http_type()  # Check what output returns
 ```
 
-
----
+------------------------------------------------------------------------
 
 **Step 2.** Look at the raw JSON response to understand its structure.
-
 
 The JSON has four main elements: "count", "next", "previous", and "results". The actual data we want is in "results", the 4th element.
 
@@ -523,10 +564,9 @@ raw_json <- httr::GET(paste0(baseurl, query)) |>
 cat(substr(jsonlite::prettify(raw_json), 1, 2000))
 ```
 
+------------------------------------------------------------------------
 
----
-
-**Step 3.** Parse the results and create an R object. 
+**Step 3.** Parse the results and create an R object.
 
 ```{r}
 # Parse the JSON
@@ -544,18 +584,17 @@ parsed_data |>
 #   head(3)
 ```
 
+------------------------------------------------------------------------
 
----
+## API keys and authentication \`r emo::ji('lock')\`\`
 
-## API keys and authentication `r emo::ji('lock')``
-
-For many APIs, you will need to obtain an api key to retrieve data. Once you received your api key (or token), you will also need to adapt your GET query. How you need to do this depends a lot on the API. Let's take a look at how to do this with the API for the [US congress](https://api.congress.gov/). The API is actually valid across a number of [US government institutions](https://api.data.gov/). 
+For many APIs, you will need to obtain an api key to retrieve data. Once you received your api key (or token), you will also need to adapt your GET query. How you need to do this depends a lot on the API. Let's take a look at how to do this with the API for the [US congress](https://api.congress.gov/). The API is actually valid across a number of [US government institutions](https://api.data.gov/).
 
 We can sign up for an API key [here](https://api.data.gov/signup/). The API website, gives us detailed information on how to build our queries. But how do we actually authenticate ourselves with the API key? The [documentation](https://api.data.gov/docs/api-key/) tells us that there are multiple ways to go about this. We can either do adapt the use HTTP basic authentication, the GET query parameter, or the HTTP header.
 
 Here's a quick overview of how to implement these with `httr`:
 
-```r
+``` r
 # sign up for API key: https://api.data.gov/signup/
 #Sys.setenv(MY_API_KEY = "[YOUR API KEY GOES HERE]") # store your personal API key in R environment
 
@@ -571,8 +610,7 @@ try2 <- GET(glue::glue(baseurl, query, "?", api_key)) |>
   as.data.frame()
 ```
 
-
-```r
+``` r
 # US Congress: Actions on a specific nomination
 query <- "nomination/115/2259/actions"
 
@@ -583,7 +621,7 @@ GET(glue::glue(baseurl, query, "?", api_key)) |>
   as.data.frame()
 ```
 
-```r
+``` r
 # US Congress: Summaries filtered by congress and bill type
 query <- "summaries/117/hr?fromDateTime=2022-04-01T00:00:00Z&toDateTime=2022-04-03T00:00:00Z&sort=updateDate+desc"
 
@@ -594,7 +632,7 @@ GET(glue::glue("{baseurl}{query}&{api_key}")) |> # another way of using glue()
   as.data.frame()
 ```
 
-```r
+``` r
 # US Congress: Legislation sponsored by a specific congress member
 query <- "member/L000174/sponsored-legislation.xml" # data can be formatted as xml too
 
@@ -608,50 +646,47 @@ GET(glue::glue(baseurl, query, "?", api_key),
 
 Retrieving data from API's using `httr` can at times be quite tiresome. Luckily, there are many R libraries that make it much easier to retrieve data from APIs. Here is a [list of ready-made R bindings to web-APIs](https://ropensci.org/packages/data-access/). Actually, even the Star Wars API we queried earlier has its own R package, `rwars`!
 
----
-
-
+------------------------------------------------------------------------
 
 # A note on good scraping practice
 
-There is a set of general rules to the game: 
+There is a set of general rules to the game:
 
-1. You take all the **responsibility** for your web scraping work.
-2. Think about the nature of the data. Does it entail **sensitive information**? Do not collect personal data without explicit permission.
-3. Take all **copyrights** of a country’s jurisdiction into account. If you publish data, do not commit copyright fraud.
-4. If possible, **stay identifiable**. Stay polite. Stay friendly. Obey the scraping etiquette.
-5. If in doubt, **ask the author/creator/provider** of data for permission—if your interest is entirely scientific, chances aren’t bad that you get data.
+1.  You take all the **responsibility** for your web scraping work.
+2.  Think about the nature of the data. Does it entail **sensitive information**? Do not collect personal data without explicit permission.
+3.  Take all **copyrights** of a country’s jurisdiction into account. If you publish data, do not commit copyright fraud.
+4.  If possible, **stay identifiable**. Stay polite. Stay friendly. Obey the scraping etiquette.
+5.  If in doubt, **ask the author/creator/provider** of data for permission—if your interest is entirely scientific, chances aren’t bad that you get data.
 
----
+------------------------------------------------------------------------
 
 ## How do I know the scraping etiquette of a site? `r emo::ji("handshake")`
 
 Robot exclusion standards (`robot.txt`) are informal protocols to prohibit web robots from crawling content. They list documents that are allowed to crawl and which not. It is not a technical barrier but an ask for compliance.
 
-They are located in the root directory of a website (e.g `https://de.wikipedia.org/robots.txt`). 
+They are located in the root directory of a website (e.g `https://de.wikipedia.org/robots.txt`).
 
 For example, let's have a look at Wikipedia's [robot.txt](https://de.wikipedia.org/robots.txt) file, which is very human readable.
 
 General rules are listed under `User-agent: *` which is most interesting for R-based crawlers. A universal ban for a directory looks like this `Disallows: /`, sometimes Crawl-delays are suggested (in seconds) `Crawl-delay: 2`.
 
----
+------------------------------------------------------------------------
 
 ## What is "polite" scraping? `r emo::ji("snail")`
 
 First thing would be not to scrape at a speed that causes trouble for their server. Therefore, whenever you loop over a list of URLs, add a pause to the system at the end of the loop (e.g., `Sys.sleep(runif(1, 1, 2))` a random number between 1 and 2, and then the `Sys.sleep()` function causes the R script to pause for that random number of seconds).
 
-And generally, it is better practice to store data on your local drive first (`download.file()`), then parse (`rvest::read_html()`). 
+And generally, it is better practice to store data on your local drive first (`download.file()`), then parse (`rvest::read_html()`).
 
-:::{.alert-primary .pad-box}
+::: {.alert-primary .pad-box}
+**🌳 A footnote on this practice.**
 
-**🌳 A footnote on this practice.** 
-
-In the digital context, we often forget that or actions do have physical consequences. For example, training AI, using blockchain, and streaming videos all create considerable amounts of $CO^2$ emissions. So does bombarding a server with requests - certainly to a much lesser extent than the previous examples - but please consider whether you have to re-run a large scraping project 100 times in order to debug things. 
+In the digital context, we often forget that or actions do have physical consequences. For example, training AI, using blockchain, and streaming videos all create considerable amounts of $CO^2$ emissions. So does bombarding a server with requests - certainly to a much lesser extent than the previous examples - but please consider whether you have to re-run a large scraping project 100 times in order to debug things.
 
 Furthermore, downloading massive amounts of data may arouse attention from server administrators. Assuming that you've got nothing to hide, you should stay identifiable beyond your IP address.
 :::
 
----
+------------------------------------------------------------------------
 
 ## How can I stay identifiable? `r emo::ji("bust_in_silhouette")`
 
@@ -659,7 +694,7 @@ Furthermore, downloading massive amounts of data may arouse attention from serve
 
 **Option 2**: Use HTTP header fields `From` and `User-Agent` to provide information about yourself.
 
-```r
+``` r
 url <- "http://a-totally-random-website.com"
 
 #rvest's session() creates a session object that responds to HTTP and HTML methods.
@@ -675,15 +710,10 @@ scraped_text <- rvest_session |>
             rvest::html_text()
 ```
 
-rvest's `session()` creates a session object that responds to HTTP and HTML methods.
-Here, we provide our email address and the current R version as User-Agent information.
-This will pop up in the server logs: The webpage administrator has the chance to easily get in touch with you.
+rvest's `session()` creates a session object that responds to HTTP and HTML methods. Here, we provide our email address and the current R version as User-Agent information. This will pop up in the server logs: The webpage administrator has the chance to easily get in touch with you.
 
 # <b style="color:#2f1a61">Acknowledgements</b> {.unnumbered}
 
 This tutorial drew heavily on Simon Munzert's book [Automated Data Collection with R](http://r-datacollection.com/) and related [course materials](https://github.com/simonmunzert/web-scraping-with-r-extended-edition). We also used an [example](https://keith-mcnulty.medium.com/how-to-scrape-the-web-in-r-d77b11fca40d) from Keith McNulty's blog post on tidy web scraping in R. For the regex part, we used examples from the string manipulation section in Hadley Wickham's [R for Data Science](https://r4ds.hadley.nz/strings) book.
 
 This script was drafted by [Tom Arendt](https://github.com/tom-arend) and [Lisa Oswald](https://lfoswald.github.io/), with contributions by [Steve Kerr](https://smkerr.github.io/), [Hiba Ahmad](https://github.com/hiba-ahmad), [Carmen Garro](https://github.com/cgarroca), [Sebastian Ramirez-Ruiz](https://seramirezruiz.github.io/),[Killian Conyngham](https://github.com/Killian-Conyngham) and [Carol Sobral](https://github.com/cbsobral).
-
-
-
