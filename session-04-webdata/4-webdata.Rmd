@@ -105,26 +105,23 @@ stringr::str_locate_all(x, 'a')
 stringr::str_view(x, "a")
 ```
 
-
-:::alert-info
+::: alert-info
 **Exercise 1**: Can you find all words in that contain the sequence "ing" in the list below, and change them to be "er" instead?
 
 ```{r, echo=FALSE}
 words <- c("running", "jumps", "swimming", "biking", "skates", "hiking", "fishing", "reading")
 
 # Your code here
-stringr::str_replace_all(words, c("ing" = "er", "er" = "ed"))
 stringr::str_replace_all(words, "ing", "er")
 ```
 :::
 
-
-:::alert-info
+::: alert-info
 **Exercise 2**: Can you find how many words in the inbuilt `stringr::words` vector contain the sequence "ise"?
 
 ```{r, echo=FALSE}
 # Your code here
-
+sum(str_detect(stringr::words, "ise"))
 # You can access the words vector with: stringr::words
 ```
 :::
@@ -171,6 +168,14 @@ Simpson,Homer5553642Dr. Julius Hibbert"
 ```{r}
 names_vec <- unlist(str_extract_all(phone_vec, "[[:alpha:]., ]{2,}"))
 names_vec
+
+# the regex means:
+# Match a sequence of at least 2 characters ({2,}),
+# where each character in the sequence is one of the following:
+## A letter (uppercase or lowercase) → [:alpha:]
+## A period (.)
+## A comma (,)
+## A space ( )
 ```
 
 ```{r}
@@ -199,8 +204,10 @@ str_extract(example.obj, "banana")
 ```{r}
 str_extract(example.obj, "small")
 str_extract(example.obj, "SMALL")
-str_extract(example.obj, 
-            regex("SMALL", ignore_case = TRUE))
+str_extract(
+  example.obj, 
+  regex("SMALL", ignore_case = TRUE)
+  )
 ```
 
 ### We can match arbitrary combinations of characters
@@ -258,6 +265,7 @@ unlist(str_extract_all(example.obj, fixed(".")))
 
 ```{r}
 # Your code here
+str_view(stringr::words, "ing$|ise$")
 ```
 :::
 
@@ -266,6 +274,7 @@ unlist(str_extract_all(example.obj, fixed(".")))
 
 ```{r}
 # Your code here
+str_view_all(example.obj, ".\\.")
 ```
 :::
 
@@ -283,7 +292,7 @@ str_extract(example.obj, "sm[abc]ll")
 Some character classes are pre-defined. They are very convenient to efficiently describe specific string patterns.
 
 | Specification | Meaning | Shorthand version |
-|----|----|----|
+|------------------------|------------------------|------------------------|
 | `[:digit:]` | Digits: 0 1 2 3 4 5 6 7 8 9 | \\d |
 | `[:lower:]` | Lower-case characters: a-z | \\l |
 | `[:upper:]` | Upper-case characters: A-Z | \\u |
@@ -322,6 +331,8 @@ unlist(str_extract_all(example.obj, "[12-]"))
 
 ```{r}
 # Your code here
+str_extract_all(example.obj, "[0-9]\\.")
+str_extract_all(example.obj, "[[:alpha:]]\\.")
 ```
 :::
 
@@ -338,7 +349,7 @@ str_subset(stringr::words, "[^e]ed$")
 Quantifiers are meta-characters that allow you to specify how often a certain string pattern should be allowed to appear.
 
 | Quantifier | Meaning |
-|----|----|
+|------------------------------------|------------------------------------|
 | `?` | The preceding item is optional and will be matched at most once |
 | `*` | The preceding item will be matched zero or more times |
 | `+` | The preceding item will be matched one or more times |
@@ -411,13 +422,12 @@ Finally a word of caution at the end: Since regular expressions are extremely po
 
 1.  Can you explain what these regular expressions match?
 
-
-      a. `"\\$[0-9]+"`
-      a. `"^.*$"`
-      a. `"\-\\d{\d{4}2}-\\d{2}"`
-      a. `".*?\\.txt$"`
-      a. `"\\\\{4}"`
-      a. `"b[a-z]{1,4}"`
+    a.  `"\\$[0-9]+"`
+    b.  `"^.*$"`
+    c.  `"\-\\d{\d{4}2}-\\d{2}"`
+    d.  `".*?\\.txt$"`
+    e.  `"\\\\{4}"`
+    f.  `"b[a-z]{1,4}"`
 
 ```{r}
 # Example
@@ -437,6 +447,8 @@ str_view(
 
 ```{r}
 emails <- c('456123@students.hertie-school.org', 'h.simpson@students.hertie-school.org')
+
+str_extract_all(emails, "(^[0-9]+|^[:alpha:]\\.[:alpha:]+)@.+")
 ```
 
 ------------------------------------------------------------------------
@@ -570,7 +582,7 @@ rvest::html_elements(parsed_doc, xpath = "//h1[contains(., 'Rolf')] | //h1[conta
 Can you find all links in on our example document?
 
 ```{r}
-
+rvest::html_elements(parsed_doc, xpath = "//a")
 ```
 
 ------------------------------------------------------------------------
