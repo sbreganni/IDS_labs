@@ -48,10 +48,16 @@ background-color: #2f1a61;
 
 </style>
 ```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 pacman::p_load(tidyverse, purrr, dp)
+```
+
+```{r}
+# loading the packages
+library(tidyverse)
 ```
 
 # Introduction
@@ -150,31 +156,32 @@ Make sure you know what "year.x" and "year.y" are. Again, it pays to be specific
 
 ------------------------------------------------------------------------
 
+::: {.alert-info .pad-box}
+**Exercise 1** 🏋
 
-:::{.alert-info .pad-box}
-**Exercise 1** 🏋 
+You need to identify flights operated by planes that **aren't in the registration database**. This could indicate: - Data entry errors (wrong tail numbers) - Foreign-registered aircraft - Missing records that need to be added to the system
 
-You need to identify flights operated by planes that **aren't in the registration database**. This could indicate:
-- Data entry errors (wrong tail numbers)
-- Foreign-registered aircraft
-- Missing records that need to be added to the system
+**Your task:**
 
-**Your task:** 
+a)  Find all flights where the plane's `tailnum` doesn't appear in the `planes` registry. How many flights were operated by unregistered aircraft?
 
-a) Find all flights where the plane's `tailnum` doesn't appear in the `planes` registry. How many flights were operated by unregistered aircraft?
-
-b) Which airline has the most flights with unregistered planes? 
+b)  Which airline has the most flights with unregistered planes?
 
 *Hint: Think about which type of join keeps rows from the first table that DON'T have a match in the second table.*
-
 :::
 
 ```{r}
+# a) How many flights have missing plane data?
+flights |>
+  anti_join(planes, by = "tailnum") |>
+  count()
 
+# b) Which airline has the most flights with unregistered planes?
+flights |>
+  anti_join(planes, by = "tailnum") |>
+  count(carrier, sort = TRUE) |>
+  left_join(airlines, by = "carrier")
 ```
-
-
-
 
 ------------------------------------------------------------------------
 
@@ -197,6 +204,7 @@ Accessing databases in R requires a few packages:
 -   `DBI` is a package that allows R to connect easily to a DBMS (**D**ata**B**ase **M**anagement **S**ystem)
 
 -   Some package to interact with the back-end of the remote database such as `RSQLite`, other options might be:
+
     -   `RMariaDB::MariaDB()` for RMariaDB,
     -   `RPostgres::Postgres()` for RPostgres,
     -   `odbc::odbc()` for odbc,
@@ -393,25 +401,27 @@ dplyr::copy_to(
 )
 ```
 
-
-:::{.alert-info .pad-box}
-**Exercise 2** 🏋 
-
+::: {.alert-info .pad-box}
+**Exercise 2** 🏋
 
 Now it's your turn! Let's now add the `airports` table to our database.
 
 **Your task:**
 
-a) Inspect the `nycflights13::airports` dataset (use `head()`, `glimpse()`, or `View()`). Which column uniquely identifies each airport?
+a)  Inspect the `nycflights13::airports` dataset (use `head()`, `glimpse()`, or `View()`). Which column uniquely identifies each airport?
 
-b) Add the `airports` table to the database with the appropriate index. 
+b)  Add the `airports` table to the database with the appropriate index.
 :::
 
 ```{r}
-
+dplyr::copy_to(
+  dest = con, 
+  df = nycflights13::airports, 
+  name = "airports", # we create the "airports" table
+  temporary = FALSE, 
+  indexes = "faa"
+)
 ```
-
-
 
 Now let us call `DBI::dbListTables()` again on our "con" database connection. As you can see, there are several more tables now.
 
@@ -506,27 +516,34 @@ tailnum_delay <- tailnum_delay_db |> dplyr::collect()
 tailnum_delay
 ```
 
-
 ------------------------------------------------------------------------
 
-
-:::{.alert-info .pad-box}
-** (Optional) Exercise 3** 🏋 
+::: {.alert-info .pad-box}
+\*\* (Optional) Exercise 3\*\* 🏋
 
 You want to find the full airline names (not just the carrier codes) for all flights on January 1st.
 
 **Your task:**
 
-a) Join `flights_db` with `airlines_db` and filter for flights on January 1st. Select the carrier code, airline name, and flight number. 
+a)  Join `flights_db` with `airlines_db` and filter for flights on January 1st. Select the carrier code, airline name, and flight number.
 
-b) Collect the results into a local dataframe.
+b)  Collect the results into a local dataframe.
 :::
 
 ```{r}
+# Create reference to airlines table
+airlines_db <- dplyr::tbl(con, "airlines")
 
+# a) Join, filter, and limit (all happens on database)
+jan1_flights <- flights_db |>
+  dplyr::filter(month == 1, day == 1) |>
+  dplyr::left_join(airlines_db, by = "carrier") |>
+  dplyr::select(carrier, name, flight) 
+
+# b) Now collect into local dataframe
+jan1_flights_local <- jan1_flights |> dplyr::collect()
+jan1_flights_local
 ```
-
-
 
 ------------------------------------------------------------------------
 
