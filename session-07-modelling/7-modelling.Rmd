@@ -93,7 +93,7 @@ knitr::include_graphics("pics/data-science-communicate.png")
 
 Today we will mostly deal with the "Model" and "Communicate" steps shown in the graph.
 
-:::{.alert-info .pad-box}
+::: {.alert-info .pad-box}
 In this session, we won't focus on the statistical considerations that inform your model choice, but rather show you how to:
 
 -   Use formulas to specify multiple models
@@ -104,7 +104,7 @@ In this session, we won't focus on the statistical considerations that inform yo
 You will have full courses dedicated to thinking about modelling choices, such as Causal Inference and Machine Learning.
 :::
 
----
+------------------------------------------------------------------------
 
 # Setup
 
@@ -128,19 +128,20 @@ life_expec_dat <- readr::read_csv("life_expectancy.csv") |>
 
 head(life_expec_dat)
 ```
+
 ------------------------------------------------------------------------
 
 # Using Formulas in R `r emo::ji("teacher")`
 
-R, as a programming language, was specifically designed with statistical analysis in mind. Therefore the founding fathers of R  🙌 - in their infinite wisdom - decided to create a special object class (called `formula`) to help with running models.
+R, as a programming language, was specifically designed with statistical analysis in mind. Therefore the founding fathers of R 🙌 - in their infinite wisdom - decided to create a special object class (called `formula`) to help with running models.
 
----
+------------------------------------------------------------------------
 
 ## Crafting formulas
 
 The basic structure of a formula:
 
-```r
+``` r
 y ~ x
 ```
 
@@ -156,7 +157,7 @@ Note: Both sides of this equation go by many names. The left-hand side, often wr
 
 A quick recap of the syntax used within formulas. The `~` (*tilde*) sign generally differentiates between dependent and independent variables. The `+` sign is used to distinguish between independent variables. Here are a few more common formula inputs that are useful to know:
 
-```r
+``` r
 y ~ x1 + x2 # Standard formula
 
 y ~ . # Including all other columns in data as x variables.
@@ -169,9 +170,11 @@ y ~ x1 + x2 + x1*x2 # The same as the above
 y ~ x1:x2  # Only the interaction, no main effects (rare that you would want this)
 
 y ~ x + I(x^2) # Adds the higher order term x^2. 
+# a better way to do this is to create another variable with (x^2) inside and thne put that in the formula
 ```
 
 ## A More Explicit Way to Create Formulas
+
 Formulas are generally straightforward to work with. To make things clearer and easier to automate we can split the process into two steps:
 
 **Step 1:** Create a string containing the written formula.
@@ -197,22 +200,46 @@ reg2 <- lm(life_expectancy ~ gdp, data = life_expec_dat)
 reg1$coefficients == reg2$coefficients
 ```
 
-:::{.alert-info .pad-box}
-**Excercise 1**
-Using the two-step approach, create formulas that perform the following regressions, in each case run the model and inspect the output:
+::: {.alert-info .pad-box}
+**Excercise 1** Using the two-step approach, create formulas that perform the following regressions, in each case run the model and inspect the output:
 
-- Regress `life_expectancy` on `gdp`, `population`, and `alcohol`
+-   Regress `life_expectancy` on `gdp`, `population`, and `alcohol`
 
-- Regress `life_expectancy` on `gdp`, `population`, `alcohol`, and the interaction between `gdp` and `population`
+-   Regress `life_expectancy` on `gdp`, `population`, `alcohol`, and the interaction between `gdp` and `population`
 
-- Regress `life_expectancy` on `gdp`, the square of `gdp` and the log of `population`
+-   Regress `life_expectancy` on `gdp`, the square of `gdp` and the log of `population`
 
 ```{r, echo= FALSE}
-# your code here
+# a)
+lm(life_expectancy ~ gdp + population + alcohol, data = life_expec_dat)
+#or:
+formula_string1 <- paste("life_expectancy", "~ gdp + population + alcohol")
+formula1 <- as.formula(formula_string1)
+reg1 <- lm(formula1, data = life_expec_dat)
+summary(reg1)
+
+## lm() runs the whole regression but when I just call it I just get the coefficients. if I run asummary of the regression (either by saving it into an object or by putting summary() around the formula) then it gives me all the info I need.
+
+# b)
+formula_string2 <- paste("life_expectancy", "~ gdp * population + alcohol")
+formula2 <- as.formula(formula_string2)
+reg2 <- lm(formula2, data = life_expec_dat)
+summary(reg2)
+
+# c)
+life_expec_dat <- life_expec_dat |>
+  dplyr::mutate(log_population = log(population),
+                gdp_squared = gdp^2) #create log population variable
+
+formula_string3 <- paste("life_expectancy", "~ gdp + I(gdp^2) + log(population)")
+# Same as formula_string3 <- "life_expectancy ~ gdp + I(gdp^2) + I(log(population))". As log() is a function, it doesn't necessarily need I().
+formula3 <- as.formula(formula_string3)
+reg3 <- lm(formula3, data = life_expec_dat)
+summary(reg3)
 ```
 :::
 
----
+------------------------------------------------------------------------
 
 ## Iteration
 
@@ -239,7 +266,7 @@ lm_fun_iter_x <- function(indep_var) {
 ```{r, out.lines = 20}
 # create vector of variables to iterate over
 vars <- life_expec_dat |> 
-  dplyr::select(-c("life_expectancy", "country")) |> 
+  dplyr::select(-c("life_expectancy", "country")) |> #-c() means "everything but c"
   names()
 
 vars
@@ -262,7 +289,7 @@ biv_model_out_w_names <-  vars |>
 biv_model_out_w_names$year # we can now easily index independent vars
 ```
 
-Say that you're interested in seeing what effect `gdp` has on `life_expectancy`, but you suspect that other covariates such as alcohol consumption, health care expenditure, average body mass index and the propagation of aids also have an effect. 
+Say that you're interested in seeing what effect `gdp` has on `life_expectancy`, but you suspect that other covariates such as alcohol consumption, health care expenditure, average body mass index and the propagation of aids also have an effect.
 
 On top of this, it's possible that these variables might have different effects on `life_expectancy` depending on how they interact with each other. We can determine which independent variables are robustly associated with the dependent variable by generating models for every possible combination of independent variables and then looking into the distribution of effects across these models.
 
@@ -326,12 +353,17 @@ multiv_model_out <- combn_models(depvar = depvar, covars = covars, data = life_e
 length(multiv_model_out)
 ```
 
-:::{.alert-danger .pad-box}
+::: {.alert-danger .pad-box}
 ## Excercise 2
+
 Look at the `multiv_model_out` object that you have just created. Try to get a sense of the structure of the output. Pick three different models and inspect their output using the `summary()` function. Consider which model you think is "best" and why.
 
 ```{r, echo= FALSE}
-# your code here
+# from my understanding the object contains other objects within itself that each contain one regression
+
+summary(multiv_model_out[[10]]) #percentage_expend. & alcohol
+summary(multiv_model_out[[25]]) #alcohol & bmi & hiv_aids
+summary(multiv_model_out[[31]]) #percentage_expend. & alcohol & bmi & hiv_aids
 ```
 :::
 
@@ -391,6 +423,7 @@ A more intuitive way of inspecting the results might be to visualize them.
 ```{r, fig.height=7.5}
 # plot entire visualization
 plot(results)
+# each vertical line is a model
 ```
 
 **Plot A** denotes:
@@ -407,7 +440,7 @@ plot(results)
 -   **Y-axis (left)** = specific analytic decisions within each category
 -   **Lines** = indicates whether a specific analytic decision was true for that particular model specification
 
----
+------------------------------------------------------------------------
 
 # Interpretable Effect Sizes `r emo::ji("magnifying")`
 
@@ -505,15 +538,15 @@ broom::augment(multiv_model_out[[30]], se_fit = TRUE)
 
 Doesn't this look so much tidier?
 
----
+------------------------------------------------------------------------
 
 ## Broom with Many Models
 
 Where `broom` really shines is when it comes to dealing with multiple models like we have in our `multiv_model_out`. It allows us to easily move away from hard-to-deal-with lists while retaining each of the three important model outputs. Since our example replicates several variables in different models, we include the `.id` argument in `purrr::map()`. This adds a column to our tibble which will contain a **model identifier**. In our example, the identifier of each model corresponds with the index number of the model output.
 
 ```{r}
-multiv_model_out_broom <- purrr::map_dfr(multiv_model_out[29:31], # the model objects
-                                         broom::tidy, # the function to iterate with
+multiv_model_out_broom <- purrr::map_dfr(multiv_model_out[29:31], # model objects
+                                         broom::tidy, # function to iterate with
                                          .id = "model_type") # id column
 
 multiv_model_out_broom
@@ -531,7 +564,7 @@ For this we will use the `modelsummary` package by [Vincent Arel-Bundock's](http
 
 One reason that we like this package is that it combines both approaches of presenting model results, either as a **table** or as a **coefficient plot**. As we saw in the lecture, each method has its advantages and its drawbacks. Therefore, we will cover both here.
 
----
+------------------------------------------------------------------------
 
 ## Using Regression Tables
 
@@ -553,7 +586,7 @@ For example, we can **set acceptable number of digits**:
 modelsummary::modelsummary(multiv_model_out[[31]], 
                            output = "kableExtra",
                            fmt = "%.2f", # 2-digits and trailing 0
-                           escape = FALSE) # to avoid escaping special characters in kableExtra
+                           escape = FALSE) # to avoid escaping special characters                                               in kableExtra
 ```
 
 We can also report **only the C.I.** by getting rid of the p-values and intercept term:
@@ -600,19 +633,39 @@ mod_table |>
   row_spec(5, background = 'lightblue')
 ```
 
-:::{.alert-info .pad-box}
-**Excercise 3**
-Our implementation of `modelsummary` above is good, but it can be improved further. Using the code chunk above as a starting point, try to:
-- Switch to using significant digits instead of fixed decimal places so that gdp and percent_expenditure are interpretable.
-- Add a note at the bottom of the table indicating that the data originated at the WHO.
-- Be creative and customize the table to your liking using `kableExtra` options.
-
+::: {.alert-info .pad-box}
+**Excercise 3** Our implementation of `modelsummary` above is good, but it can be improved further. Using the code chunk above as a starting point, try to: - Switch to using significant digits instead of fixed decimal places so that gdp and percent_expenditure are interpretable. - Add a note at the bottom of the table indicating that the data originated at the WHO. - Be creative and customize the table to your liking using `kableExtra` options.
 
 ```{r, echo= FALSE}
+mod_table<-modelsummary::modelsummary(
+  multiv_model_out[29:31], 
+  output = "kableExtra",
+  fmt = fmt_significant(2), # 2 signif. digit instead of fixed decimal places
+  estimate  = "{estimate}",
+  statistic = "conf.int",
+  coef_omit = "Intercept",
+  coef_rename=c("gdp"="Gdp", 
+                "bmi"="Avg. BMI", 
+                "alcohol"="Alcohol Consum.",
+                "hiv_aids"= "HIV cases", 
+                "percentage_expenditure" = "Health Expenditure (% of GDP)",
+                "life_expectancy" = "Life Expectancy"),
+  gof_omit = 'DF|Deviance|Log.Lik|AIC|BIC',
+  title = 'An Improved Regression Table',
+  notes = "Data sourced from the WHO via (https://www.kaggle.com/kumarajarshi/life-expectancy-who)",
+  escape = FALSE) |> 
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = F, fixed_thead = T) |> 
+  row_spec(3, color = 'red') |>
+  row_spec(5, background = 'pink') # changed based on your own preferences.
 
-```  
+
+mod_table
+```
 :::
----
+
+------------------------------------------------------------------------
 
 ## Using Plots 🎨
 
@@ -648,6 +701,7 @@ This script was drafted by [Tom Arendt](https://github.com/tom-arend) and [Lisa 
 ------------------------------------------------------------------------
 
 # Appendix
+
 ## More Formula info
 
 Create a formula for a model with a large number of variables:
@@ -658,12 +712,12 @@ xnam <- paste0("x", 1:25)
 ```
 
 ## The update function
+
 The update function lets us incrementally modify/update a formula:
 
 ```{r}
 #?update
 ```
-
 
 ## Working with model outputs in base R
 
