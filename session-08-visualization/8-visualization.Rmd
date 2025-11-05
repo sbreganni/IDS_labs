@@ -198,7 +198,6 @@ Once we have our scatter plot, adapt the code to:
 2.  Change the axes names
 3.  Render the graph with `theme_minimal()`
 
-
 ```{r, figures-side, fig.show="hold",  warning=F}
 ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
   geom_point() + 
@@ -206,14 +205,21 @@ ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
 ```
 
 ```{r}
-# YOUR CODE HERE
+ggplot(penguins, aes(x = flipper_length_mm, 
+                     y = body_mass_g,
+                     colour = species)) +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Better plot",
+       x = "flipper length in millimiters",
+       y = "penguin mass in grams",
+       color = "Species") 
+  
 ```
-
-
 
 That was the first step towards understanding the basic structure of the layers. Let's have a closer look at what plot types makes sense in which situations. The question is, how can we convey the information most effectively?
 
----
+------------------------------------------------------------------------
 
 # Plotting distributions `r emo::ji("bar_chart")`
 
@@ -224,7 +230,7 @@ If we are interested in plotting distributions of our data, we can leverage geom
 -   `geom_bar()`: renders bar plots and in plotting distributions behaves in a very similar way from `geom_histogram()` (can also be used with two dimensions)
 -   `geom_boxplot()`: box plots can show distributions of variables across groups (you could also consider them as plots for relationships: between a continuous and a categorical variable)
 
----
+------------------------------------------------------------------------
 
 ## Histograms
 
@@ -240,7 +246,6 @@ ggplot(df,
 
 > What conclusions might you draw from the histogram above about the distribution of life expectancy worldwide?
 
-
 The default number of bins is 30, which means that the entire range of the variable (here 23.60 to 82.60) is split into 30 equally spaced bins. We can change the number of bins manually. Below, we specify 60 bins to approximate a bin width of 1 year, **taking into account the range of the variable** `lifeExp`.
 
 ```{r,  warning = F, message = F, fig.height = 3}
@@ -250,17 +255,19 @@ ggplot(df, aes(x = lifeExp)) +
   geom_histogram(bins = 60)
 ```
 
-What would happen if we specified 5 bins? Try it out. 
-
+What would happen if we specified 5 bins? Try it out.
 
 ```{r}
-# YOUR CODE HERE
+ggplot(df, aes(x = lifeExp)) +
+  geom_histogram(bins = 5)
+
+ggplot(df, aes(x = lifeExp)) +
+  geom_histogram(bins = 200)
+
+#it's important to choose the right amount of bins to make the graph make sense and also get the right takeaways
 ```
 
-
-
-
----
+------------------------------------------------------------------------
 
 ## Density plots
 
@@ -273,7 +280,7 @@ ggplot(df, aes(x = lifeExp)) +
   geom_density()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Boxplots `r emo::ji("package")`
 
@@ -300,7 +307,7 @@ ggplot(subset(df), aes(x = continent, y = lifeExp)) +
   coord_flip()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Violin Plots `r emo::ji("violin")`
 
@@ -317,29 +324,33 @@ ggplot(subset(df), aes(x = continent, y = lifeExp)) +
   coord_flip()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Exercise 2 - Distributions
 
 Create a histogram showing the distribution of penguin body mass using the `penguins` dataset. As you explore the plot, try the following:
 
-1. Choose an appropriate number of bins (for example, start with bins = 15 and adjust).
+1.  Choose an appropriate number of bins (for example, start with bins = 15 and adjust).
 
-1. Set a fill color using fill = "red" or a hex code such as "#FF6666".
+2.  Set a fill color using fill = "red" or a hex code such as "#FF6666".
 
-1. Experiment with different geoms by replacing geom_histogram() with options like geom_density(), geom_bar(), or others.
-
-```{r}
-# YOUR CODE HERE
-
-```
-
-1. Now, look for a variable in the dataset that can be used to meaningfully group body mass. Use that variable to create a box plot or violin plot of body mass.
+3.  Experiment with different geoms by replacing geom_histogram() with options like geom_density(), geom_bar(), or others.
 
 ```{r}
-# YOUR CODE HERE
+ggplot(penguins, aes(x = body_mass_g)) +
+  geom_histogram(bins = 15, fill = "red") + 
+  theme_minimal()
 ```
 
+1.  Now, look for a variable in the dataset that can be used to meaningfully group body mass. Use that variable to create a box plot or violin plot of body mass.
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g,
+                     y = species,
+                     color = species)) +
+  geom_violin() + 
+  theme_minimal()
+```
 
 ------------------------------------------------------------------------
 
@@ -370,7 +381,7 @@ ggplot(df, aes(x = gdpPercap, y = lifeExp)) +
   theme_light()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Scaling the data
 
@@ -414,7 +425,6 @@ gridExtra::grid.arrange(log10_direct_plot, log10_via_scale_plot, ncol = 2)
 
 > Can you explain the differences between the plot applying the natural log to the variable within the `aes()` function versus using `scale_x_continuous()`?
 
-
 We can use the same principle in bivariate (or multivariate) displays of data. Below, we use the `scale` transformation on the variable and reflect it in the axis label clarify that it is the relationship between life expectancy and the logarithm of GDP per capita that has a strong positive relationship.
 
 ```{r, warning = F, message = F}
@@ -428,8 +438,7 @@ ggplot(df, aes(x = gdpPercap, y = lifeExp)) +
   theme_light()
 ```
 
-
----
+------------------------------------------------------------------------
 
 ## Adding trend lines
 
@@ -475,7 +484,7 @@ ggplot(df, aes(x = log(gdpPercap),
   geom_smooth(method = "lm")
 ```
 
----
+------------------------------------------------------------------------
 
 ## Line plots
 
@@ -495,13 +504,11 @@ ggplot(subset(df, country == "China"),
   geom_point()
 ```
 
-
----
+------------------------------------------------------------------------
 
 ## Visualising multiple time series
 
 To compare a time series across many units, we can plot all series in one figure using thin, low-opacity lines to keep the display readable. Here, we apply this approach to life expectancy over time and highlight China in red.
-
 
 ```{r}
 ggplot(df,
@@ -518,9 +525,7 @@ ggplot(df,
             color = "red", linewidth = 1)
 ```
 
-
-
----
+------------------------------------------------------------------------
 
 ## Heatmaps
 
@@ -598,7 +603,7 @@ ggplot(cors, aes(x = year, y = continent, fill = cor)) +
   coord_cartesian(expand = 0)
 ```
 
----
+------------------------------------------------------------------------
 
 ## Barplots
 
@@ -663,23 +668,54 @@ ggplot(subset(diff07, continent == "Europe" & year == 2007),
   theme_minimal()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Exercise 3 - Relationships
 
 Create a scatter plot to explore the relationship between `flipper_length_mm` and `body_mass_g`. Then, color by a grouping variable (of your choice) and add linear trend lines.
 
 ```{r}
-# YOUR CODE HERE
+ggplot(penguins, aes(x = flipper_length_mm, 
+                     y = body_mass_g,
+                     color = species)) +
+  geom_point(alpha = 0.6, size = 1.2) +
+  geom_smooth(method = "lm", se = F) +
+  labs(x = "Flipper length (mm)", 
+       y = "Body mass (g)", 
+       color = "Species") +
+  scale_color_brewer(palette = "Set2") +
+  theme_minimal()
+
+# with only one trend line
+ggplot(penguins, aes(x = flipper_length_mm, 
+                     y = body_mass_g)) +
+  geom_point(alpha = 0.6, size = 1.2,
+             aes(colour = species)) +
+  geom_smooth(method = "lm", se = F) +
+  labs(x = "Flipper length (mm)", 
+       y = "Body mass (g)", 
+       color = "Species") +
+  scale_color_brewer(palette = "Set2") +
+  theme_minimal()
+
+# other way to get a single trend line:
+# ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+#   geom_point(alpha = 0.6, size = 1.2) +
+#   geom_smooth(method = "lm", 
+#               se = FALSE,
+#               inherit.aes = F,
+#               aes(x = flipper_length_mm, y = body_mass_g)) +
+#   labs(x = "Flipper length (mm)", y = "Body mass (g)", color = "Species") +
+#   theme_minimal()
 ```
 
----
+------------------------------------------------------------------------
 
 # Graph appearance `r emo::ji("nail_care")`
 
 The default graphs we have produced so far are not (yet) ready for publication. In particular, they lack informative labels. In addition, we might want to change the appearance of the graph in terms of size, color, linetype, etc.
 
----
+------------------------------------------------------------------------
 
 ## Title, subtitle, and axes titles
 
@@ -694,7 +730,7 @@ ggplot(df,aes(x = lifeExp)) +
   theme_minimal()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Axis ranges
 
@@ -711,14 +747,13 @@ ggplot(df, aes(x = lifeExp)) +
   theme_minimal()
 ```
 
-
-:::{.alert-info .pad-box}
-**Caution!** 
+::: {.alert-info .pad-box}
+**Caution!**
 
 You will sometimes see the command `scale_y_continuous(limits = c(0, 85))` instead of `coord_cartesian(ylim = c(0, 85))`. Note that these are not the same. `coord_cartesian()` only adjusts the range of the axes (it "zooms" in and out), while `scale_y_continuous(limits = c())` subsets the data. For density plots, this does not make a difference. But there are other examples where it alters the actual shape of the graph, rather than just the part of the graph that is visible.
 :::
 
----
+------------------------------------------------------------------------
 
 ## Coloring and filling
 
@@ -761,7 +796,7 @@ Suppose, I like the general tone of the darkblue color above but am worried that
 
 Another good source for color schemes is [colorbrewer2](https://colorbrewer2.org), which also has an R binding, `RColorBrewer`.
 
----
+------------------------------------------------------------------------
 
 ## Line types and width
 
@@ -792,7 +827,7 @@ ggplot(df, aes(x = lifeExp)) +
   theme_minimal()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Opacity
 
@@ -807,7 +842,7 @@ ggplot(df, aes(x = log(gdpPercap), y = lifeExp)) +
   theme_light()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Symbols/shapes
 
@@ -837,13 +872,13 @@ ggplot(subset(df, year == 2007),
   theme_light()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Themes
 
 We can alter the appearance of any element in the plot. Below, we change the pre-specified `theme` that `ggplot2` uses to determine the appearance of the plot. Popular options are `theme_bw()`, `theme_minimal()` or `theme_light()`. For a full list of themes, see [ggtheme](https://ggplot2.tidyverse.org/reference/ggtheme.html).
 
----
+------------------------------------------------------------------------
 
 # Comparing groups `r emo::ji("apple")` `r emo::ji("pear")`
 
@@ -866,7 +901,6 @@ ggplot(df, aes(x = lifeExp, color = continent)) +
        y = "Density") +
   theme_bw()
 ```
-
 
 We can adjust the colors used in the plot in a variety of ways. Below, we first use the `scale_color_manual()` function. This will change the colors in both the plot and the legend, based on our manual specification. Within the `scale_color_manual()` argument, we can also specify a name and labels for the legend.
 
@@ -903,8 +937,7 @@ ggplot(df, aes(x = lifeExp, color = continent)) +
 
 Check out the list of color palettes compiled by [Emil Hvitfeldt](https://github.com/EmilHvitfeldt/r-color-palettes/blob/master/type-sorted-palettes.md#sequential-color-palettes). There is even a Wes Anderson movies inspired color scheme available using the package [wesanderson](https://github.com/karthik/wesanderson#the-isle-of-dogs-2018)! Another popular option are the color schemes from the [viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html) package due to their desirable properties with respect to colorblindness and printability.
 
-
----
+------------------------------------------------------------------------
 
 ## Using different linetypes
 
@@ -923,7 +956,7 @@ ggplot(df, aes(x = lifeExp, color = continent, linetype = continent)) +
   scale_linetype_discrete(name = "Continent")
 ```
 
----
+------------------------------------------------------------------------
 
 ## Faceting
 
@@ -956,19 +989,29 @@ ggplot(subset(df, continent != "Oceania"),
   facet_grid(year ~ continent)
 ```
 
----
+------------------------------------------------------------------------
 
 ## Exercise 4 - Groups and Relationships
 
 Create a plot to compare the GDP per capita development of the BRICS countries (Brazil, Russia, India, China, South Africa). Unfortunately, Russia (or previously the Soviet Union) is not part of the `gapminder` data, so we cannot display it in the plot.
 
-
 ```{r}
-# YOUR CODE HERE
-
+ggplot(
+  subset(df, country %in% c("Brazil", "China", "India", "South Africa")),
+  aes(x = year,
+      y = gdpPercap)) +
+  geom_line(alpha = 0.5) +
+  geom_point(alpha = 0.8,
+             size = 0.4) +
+  theme_light() +
+  labs(title = "GDP per capita in BRICS countries",
+       x = "Year",
+       y = "GDP per capita") +
+  facet_wrap(~country, nrow = 1) +
+  scale_x_continuous(breaks = seq(1950,2000, 25))
 ```
 
----
+------------------------------------------------------------------------
 
 # Saving plots `r emo::ji("floppy_disk")`
 
