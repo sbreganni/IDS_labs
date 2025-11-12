@@ -51,6 +51,7 @@ padding: 1em;"
 }
 </style>
 ```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 options(digits=2)
@@ -176,9 +177,9 @@ fluidPage(
 )
 ```
 
-We can guess what is going on by reading their names. We might imagine that this code will generate a classic app design: a title bar at top, followed by a sidebar (containing a slider) and main panel (containing a plot). 
+We can guess what is going on by reading their names. We might imagine that this code will generate a classic app design: a title bar at top, followed by a sidebar (containing a slider) and main panel (containing a plot).
 
-:::{.alert-info .pad-box}
+::: {.alert-info .pad-box}
 📝 **Note**
 
 The ability to easily see hierarchy through indentation is one of the reasons it is a good idea to use a consistent style when building these apps.
@@ -304,19 +305,22 @@ Each `render*` function takes a single argument: an R expression surrounded by b
 ------------------------------------------------------------------------
 
 ## Exercises
-:::{.alert-info .pad-box}
+
+::: {.alert-info .pad-box}
 Now it is your turn, adapt the Shiny app by:
 
 1.  Give the scatter plot a Title that updates based on the selected x and y variables.
     -   Hint: Start by just giving it a title, then work on making it dynamic.
+    -   *where:* define server -\> "A reactive expression" -\> build ggplot -\> labs
 2.  Turn our scatter plot into a bubble plot, where the size of the bubbles is determined by the revenues generated at the Box-Office.
+    -   *where:* define server -\> "A reactive expression" -\> build ggplot -\> ggplot -\> aes (size)
 3.  Adding a widget that let's you subset by genre of film:
     -   Think about where you specify this?
     -   Focus on filtering for only one genre at a time.
     -   Make sure to specify what the default option should be and how we should handle it.
     -   Genre Categories in the data include: Action, Adventure, Animation, Biography, Comedy, Crime, Documentary, Drama, Family, Fantasy, History, Horror, Music, Musical, Mystery, Romance, Sci-Fi, Short, Sport, Thriller, War, Western.
-
 :::
+
 ------------------------------------------------------------------------
 
 ## More complicated examples `r emo::ji("gear")`

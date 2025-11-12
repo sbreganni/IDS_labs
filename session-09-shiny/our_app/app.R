@@ -173,6 +173,7 @@ server <- function(input, output, session) {
         y = input$yvar,
         fill = "has_oscar",
         colour = "has_oscar",
+        size = "BoxOffice",
         text = "paste0(
         '<b>', Title, '</b><br>',
         'Year: ', Year, '<br>',
@@ -180,12 +181,15 @@ server <- function(input, output, session) {
       )"
       )
     ) +
-      geom_point(shape = 21, alpha = 0.7) +
+      geom_point(shape = 21, 
+                 alpha = 0.7) +
+      scale_size(range = c(1, 10), name = "Box Office", guide = "none") +
       scale_fill_manual(values = c("Yes" = "orange", "No" = "gray"),name = "Won an Oscar") +
       scale_color_manual(values = c("Yes" = "orange", "No" = "gray"),guide = "none") +
       labs(
         x = xvar_name,
-        y = yvar_name
+        y = yvar_name,
+        title = paste0("looking at ", xvar_name, " vs ", yvar_name)
       ) +
       theme_minimal()
     
