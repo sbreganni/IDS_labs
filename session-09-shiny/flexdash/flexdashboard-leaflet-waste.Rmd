@@ -11,7 +11,7 @@ output:
 library(flexdashboard)
 library(shiny)
 library(jsonlite)
-library(maptools)
+#library(maptools)
 library(ggplot2)
 library(tidyr)
 library(dplyr)
