@@ -14,22 +14,81 @@ library(rnaturalearth)
 library(dplyr)
 library(sf)
 library(shiny)
+library(gapminder)
 
 # Color palette
-pal <- colorNumeric("YlOrRd", domain = NULL)
+pal <- colorNumeric("YlOrRd", domain = range(gapminder$lifeExp, na.rm = TRUE))
 
 # Load African country boundaries
 africa <- ne_countries(continent = "Africa", returnclass = "sf")
 ```
 
-
-
-### African Countries 
 ```{r}
-# Plot 
-leaflet(africa) |>
-  addTiles() |>
-  addPolygons()
+# # Plot 
+# leaflet(africa) |>
+#   addTiles() |>
+#   addPolygons()
 ```
 
+```{r}
+# EXERCISE 1
+
+# Data prep:
+# gapminder_africa <- gapminder |>
+#   filter(continent == "Africa",
+#          year == 2007)
+
+
+# africa_data <- africa |>
+#   left_join(gapminder_africa, by = c("name" = "country"))
+# 
+# # Plot:
+# leaflet(africa_data) |>
+#   addTiles() |>
+#   addPolygons(
+#     fillColor = ~pal(lifeExp), 
+#     fillOpacity = 0.7
+#   ) |>
+#   addLegend(
+#     pal = pal,
+#     values = ~lifeExp,
+#     title = "Life Expectancy",
+#     position = "bottomleft"
+#   )
+```
+
+Column{.sidebar}
+--------------------
+```{r}
+selectInput(inputId = "Year",
+            label = "Select Year:",
+            choices = unique(gapminder$year))
+```
+
+Column
+--------------------
+### African Countries 
+
+```{r}
+# EXERCISE 2
+
+renderLeaflet({
+  gapminder_africa <- gapminder |>
+    filter(continent == "Africa",
+           year == input$Year)
+ 
+  africa_data <- africa |>
+    left_join(gapminder_africa, by = c("name" = "country"))
+  
+  # Plot:
+  leaflet(africa_data) |>
+    addTiles() |>
+    addPolygons(fillColor = ~pal(lifeExp),
+                fillOpacity = 0.7) |>
+    addLegend(pal = pal,
+              values = ~lifeExp,
+              title = "Life Expectancy",
+              position = "bottomleft")
+})
+```
 
