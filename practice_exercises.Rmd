@@ -9,5 +9,46 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+# My packages
+library(tidyverse)
+library(rvest)
+library(stringr)
+```
+
 ## Scraping some books!
 
+The goal is to get
+
+-   Title,
+-   Prices,
+-   Rating,
+-   Number of books in stock
+
+```{r}
+books_url <- read_html("https://books.toscrape.com/")
+```
+
+```{r}
+title_list <- books_url |>
+  html_elements(xpath = "//article[@class='product_pod']/h3/a") %>%
+  html_attr("title") # using attr because some of the long titles are cut off and text wouldn't get all
+
+price_list <- books_url |>
+  html_elements(xpath = "//article[@class='product_pod']/div[@class='product_price']/p[@class='price_color']")|>
+  html_text2()
+
+rating_list <- books_url |>
+  html_elements(xpath = "//article[@class='product_pod']/p[contains(@class, 'star-rating')]")|>
+  html_attr("class")|>
+  str_extract("(?<= )([A-Z][a-z]+)$")|>
+  factor(levels = c("One", "Two", "Three", "Four", "Five"), labels = 1:5)
+
+link_list <- books_url |>
+  html_elements(xpath = ".//article[@class='product_pod']/h3/a") |>
+  html_attr("href")|>
+  (\(.x) paste0("https://books.toscrape.com/", .x))()
+
+
+  
+```
